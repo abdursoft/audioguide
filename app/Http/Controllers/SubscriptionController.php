@@ -13,7 +13,11 @@ class SubscriptionController extends Controller
      */
     public function index()
     {
-        //
+        return response()->json([
+            'status' => true,
+            'message' => 'Subscription plan successfully retrieved',
+            'data' => Subscription::all()
+        ],200);
     }
 
     /**
@@ -64,15 +68,8 @@ class SubscriptionController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Request $request, $id=null)
+    public function show(Subscription $subscription)
     {
-        $subscription = null;
-        if($id !== null){
-            $subscription = Subscription::find($id);
-        }else{
-            $subscription = Subscription::all();
-        }
-
         return response()->json([
             'status' => true,
             'message' => 'Subscription plan successfully retrieved',
@@ -94,7 +91,7 @@ class SubscriptionController extends Controller
     public function update(Request $request, Subscription $subscription)
     {
         $validator = Validator::make($request->all(),[
-            "title" => 'required|unique:subscriptions,title,'.$request->input('subscription_id').',id',
+            "title" => 'required|unique:subscriptions,title,'.$subscription->id.',id',
             'description' => 'required|max:300',
             'price' => 'required',
             'currency' => 'required',
@@ -111,10 +108,10 @@ class SubscriptionController extends Controller
         }
 
         try {
-            Subscription::where('id',$request->input('subscription_id'))->update($validator->validate());
+            $subscription->update($validator->validate());
             return response()->json([
                 'status' => true,
-                'message' => 'Subscription plan successfully update'
+                'message' => 'Subscription plan successfully updated'
             ],201);
         } catch (\Throwable $th) {
             return response()->json([
@@ -128,10 +125,10 @@ class SubscriptionController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy( Request $request,$id)
+    public function destroy( Subscription $subscription)
     {
         try {
-            Subscription::where('id',$id)->delete();
+            $subscription->delete();
             return response()->json([
                 'status' => true,
                 'message' => 'Subscription plan has been deleted'
@@ -144,5 +141,17 @@ class SubscriptionController extends Controller
             ],400);
         }
         
+    }
+
+
+    /**
+     * Single subscription
+     */
+    public function singleSubScription($id){
+        return response()->json([
+            'status' => true,
+            'message' => 'Subscription plan successfully retrieved',
+            'data' => Subscription::find($id)
+        ],200);
     }
 }

@@ -17,6 +17,8 @@ class Invoice extends Model
         'payable',
         'trans_id',
         'val_id',
+        'gateway',
+        'payment_id',
         'delivery_status',
         'payment_status',
         'user_id',

@@ -13,6 +13,7 @@ return new class extends Migration {
             $table->id();
             $table->bigInteger('quantity')->default(1);
             $table->double('price')->default(0);
+            $table->double('discount')->default(0);
             // make the relation with audio_guide table
             $table->unsignedBigInteger( 'audio_guide_id' );
             $table->foreign( 'audio_guide_id' )->references( 'id' )->on( 'audio_guides' )->cascadeOnUpdate()->restrictOnDelete();

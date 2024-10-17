@@ -48,7 +48,7 @@ class ProductOfferController extends Controller {
         try {
             $audio = AudioGuide::find( $request->input( 'audio_guide_id' ) );
             if ( $request->input( 'offer_type' ) === 'percent' ) {
-                $price = $audio->price * $request->input( 'offer_amount' ) / 100;
+                $price = $audio->price - ($audio->price * $request->input( 'offer_amount' ) / 100);
             } else {
                 $price = $audio->price - $request->input( 'offer_amount' );
             }

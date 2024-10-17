@@ -28,40 +28,21 @@ Route::get('/user', function (Request $request) {
 
 
 // user api routes 
-// Route::prefix('v1/users')->group(function(){
-//     Route::post('signup', [UserController::class, 'store']);
-//     Route::post('signup-otp-verify', [UserController::class, 'verifySignupOTP']);
-//     Route::post('signin', [UserController::class, 'login']);
+Route::prefix('v1/users')->group(function(){
+    Route::post('signup', [UserController::class, 'store']);
+    Route::post('signup-otp-verify', [UserController::class, 'verifySignupOTP']);
+    Route::post('signin', [UserController::class, 'login']);
 
 
 
-//     Route::middleware([UserAuthentication::class])->group(function(){
-//         // guide cart section start 
-//         Route::prefix('cart')->group(function(){
-//             Route::post('add', [ProductCartController::class, 'store']);
-//             Route::post('edit', [ProductCartController::class, 'update']);
-//             Route::get('get/{id?}', [ProductCartController::class, 'show']);
-//             Route::delete('delete/{id?}', [ProductCartController::class, 'destroy']);
-//         });
-//         // guide cart section end
-
-//         // guide wishlist section start 
-//         Route::prefix('wishlist')->group(function(){
-//             Route::post('add', [ProductWishController::class, 'store']);
-//             Route::post('edit', [ProductWishController::class, 'update']);
-//             Route::get('get/{id?}', [ProductWishController::class, 'show']);
-//             Route::delete('delete/{id?}', [ProductWishController::class, 'destroy']);
-//         });
-//         // guide wishlist section end
-
-//         // guide wishlist section start 
-//         Route::prefix('invoice')->group(function(){
-//             Route::post('create', [InvoiceController::class, 'store']);
-//             Route::get('get/{id?}', [InvoiceController::class, 'show']);
-//         });
-//         // guide wishlist section end
-//     });
-// });
+    Route::middleware([UserAuthentication::class])->group(function(){
+        // guide cart section start 
+        Route::apiResource('cart', ProductCartController::class);
+        Route::apiResource('wishlist', ProductWishController::class);
+        Route::apiResource('invoice', InvoiceController::class);
+        // guide wishlist section end
+    });
+});
 
 
 // admin api routes 
@@ -83,7 +64,7 @@ Route::prefix('v1/admin')->group(function(){
         Route::apiResource('audio-content', AudioContentController::class);
         Route::apiResource('audio-description',AudioDescriptionController::class);
         Route::apiResource('audio-faq',AudioFaqController::class);
-        Route::apiResource('audio-offer',ProductOfferController::class);
+        Route::apiResource('product-offer',ProductOfferController::class);
 
         // subscription section start 
         Route::apiResource('subscription', SubscriptionController::class);
@@ -103,12 +84,17 @@ Route::prefix('v1/password')->group(function(){
 
 // client controller
 Route::prefix('v1/client')->group(function(){
-    Route::get('sections/{id?}', [ SectionController::class, 'show' ]);
-    Route::get('settings', [ SettingsController::class, 'show' ]);
+    Route::get('category', [ CategoryController::class, 'index' ]);
+    Route::get('category/{category}/audio', [ CategoryController::class, 'categoryByGuide' ]);
+    Route::get('sections', [ SectionController::class, 'index' ]);
+    Route::get('sections/{id}', [ SectionController::class, 'singleSection' ]);
+    Route::get('settings/{id}', [ SettingsController::class, 'index' ]);
     Route::get('audio/pagination', [AudioGuideController::class, 'onlyGuide']);
     Route::get('audio/by/content/{id}', [AudioGuideController::class, 'audioByContent']);
-    Route::get('audio/contents/{id?}', [AudioContentController::class, 'show']);
-    Route::get('subscriptions/{id?}', [SubscriptionController::class, 'show']);
+    Route::get('audio/contents', [AudioContentController::class, 'index']);
+    Route::get('audio/contents/{id}', [AudioContentController::class, 'singleContent']);
+    Route::get('subscriptions', [SubscriptionController::class, 'index']);
+    Route::get('subscriptions/{id?}', [SubscriptionController::class, 'singleSubScription']);
 });
 
 

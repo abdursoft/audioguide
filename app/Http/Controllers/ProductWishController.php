@@ -10,8 +10,12 @@ class ProductWishController extends Controller {
     /**
      * Display a listing of the resource.
      */
-    public function index() {
-        //
+    public function index( Request $request ) {
+        return response()->json( [
+            'status'  => true,
+            'message' => 'Wishlist successfully retrieved',
+            'data'    => ProductWish::with( 'AudioGuide' )->where( 'user_id', $request->header( 'id' ) )->get(),
+        ], 200 );
     }
 
     /**
@@ -61,20 +65,12 @@ class ProductWishController extends Controller {
     /**
      * Display the specified resource.
      */
-    public function show( Request $request, $id=null ) {
-        if($id == null){
-            return response()->json([
-                'status' => true,
-                'message' => 'Audio guide successfully retrieved',
-                'data' => ProductWish::with('AudioGuide')->where('user_id',$request->header('id'))->get()
-            ],200);
-        }else{
-            return response()->json([
-                'status' => true,
-                'message' => 'Audio guide successfully retrieved',
-                'data' => ProductWish::with('AudioGuide')->where('id',$id)->where('user_id',$request->header('id'))->first()
-            ],200);
-        }
+    public function show( Request $request, ProductWish $productWish ) {
+        return response()->json( [
+            'status'  => true,
+            'message' => 'Wishlist successfully retrieved',
+            'data'    => $productWish->with( 'AudioGuide' )->where( 'user_id', $request->header( 'id' ) )->first(),
+        ], 200 );
     }
 
     /**
@@ -94,35 +90,21 @@ class ProductWishController extends Controller {
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy( Request $request, $id) {
-        // try {
-        //     if ( $productWish->user_id === $request->header( 'id' ) ) {
-        //         $productWish->delete();
-        //         return response()->json( [
-        //             'status' => 'success',
-        //             'carts'  => 'Audio guide successfully removed from wish list',
-        //         ], 200 );
-        //     }
-        // } catch ( \Throwable $th ) {
-        //     return response()->json( [
-        //         'status' => 'fail',
-        //         'carts'  => "Unauthorized Access",
-        //     ], 400 );
-        // }
-
-
-        $exist = ProductWish::where('id',$id)->where('user_id',$request->header('id'))->first();
-        if($exist){
-            $exist->delete();
-            return response()->json([
-                'status' => 'success',
-                'carts' => 'Audio guide successfully removed from wishlist'
-            ],200);
-        }else{
-            return response()->json([
+    public function destroy( Request $request, ProductWish $productWish ) {
+        try {
+            if ( $productWish->user_id === $request->header( 'id' ) ) {
+                $productWish->delete();
+                return response()->json( [
+                    'status' => 'success',
+                    'message'  => 'Product successfully removed from wishlist',
+                ], 200 );
+            }
+        } catch ( \Throwable $th ) {
+            return response()->json( [
                 'status' => 'fail',
-                'carts' => "Unauthorized Access"
-            ],401);
+                'message'  => "Unauthorized Access",
+                'errors' => $th->getMessage(),
+            ], 400 );
         }
     }
 }

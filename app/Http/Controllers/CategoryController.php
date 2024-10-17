@@ -90,11 +90,11 @@ class CategoryController extends Controller {
     /**
      * Update the specified resource in storage.
      */
-    public function update( Request $request, Category $category) {
-        
+    public function update( Request $request, Category $category ) {
+
         $validator = Validator( $request->all(), [
-            'category'    => "required|string|unique:categories,category,$category->id,id",
-            'image'       => 'file|mimes:jpeg,jpg,png',
+            'category' => "required|string|unique:categories,category,$category->id,id",
+            'image'    => 'file|mimes:jpeg,jpg,png',
         ] );
 
         if ( $validator->fails() ) {
@@ -106,7 +106,7 @@ class CategoryController extends Controller {
         }
 
         try {
-            $file  = $category->image;
+            $file = $category->image;
             if ( $request->hasFile( 'image' ) ) {
                 $file = Storage::disk( 'public' )->put( 'category', $request->file( 'image' ) );
             }
@@ -170,5 +170,20 @@ class CategoryController extends Controller {
             ] );
             return $cat->id;
         }
+    }
+
+    /**
+     * Category by guide
+     */
+    public function categoryByGuide( $category ) {
+        return response()->json( [
+            'status'  => true,
+            'message' => 'Category wise audio guides',
+            'data'    => Category::with( 'AudioGuide' )->where( 'id', $category )->paginate(
+                $perPage = 10,
+                $column = ['*'],
+                $pageName = 'page'
+            ),
+        ], 200 );
     }
 }

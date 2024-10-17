@@ -13,7 +13,7 @@ class SectionController extends Controller {
      */
     public function index() {
         return response()->json( [
-            'status' => 200,
+            'status' => true,
             'data'   => Section::all(),
         ], 200 );
     }
@@ -96,7 +96,7 @@ class SectionController extends Controller {
      */
     public function show( Section $section ) {
         return response()->json( [
-            'status' => 200,
+            'status' => true,
             'data'   => $section,
         ], 200 );
     }
@@ -199,5 +199,15 @@ class SectionController extends Controller {
                 'errors'  => $th->getMessage()
             ], 400 );
         }
+    }
+
+    /**
+     * Single section
+     */
+    public function singleSection($id){
+        return response()->json( [
+            'status' => true,
+            'data'   => Section::find($id),
+        ], 200 ); 
     }
 }

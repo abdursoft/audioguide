@@ -72,11 +72,11 @@ class StripeController extends Controller
     }
 
 
-    public function payment(string $email,int|float $amount, string $currency, string $name,array $data)
+    public function payment(string $email,int|float $amount, string $currency, string $name,array $data,$trans_id)
     {
         $checkout_session = $this->pay->checkout->sessions->create([
-            'success_url' => env("APP_URL")."/stripe/payment/success",
-            'cancel_url' => env("APP_URL")."/stripe/payment/cancel",
+            'success_url' => env("APP_URL")."/payment/stripe/success?trans=$trans_id",
+            'cancel_url' => env("APP_URL")."/payment/stripe/cancel?trans=$trans_id",
             'customer_email' => $email,
             'submit_type' => 'pay',
             'payment_method_types' => ['card'],
@@ -95,12 +95,7 @@ class StripeController extends Controller
             'mode' => 'payment',
             'billing_address_collection' => 'required'
         ]);
-
-        if ($checkout_session) {
-            $_SESSION['all'] = json_encode($checkout_session);
-            header("HTTP/1.1 303 See Other");
-            header("Location: " . $checkout_session->url);
-        }
+        return $checkout_session;
     }
 
     public function paymentRetrieve(string $paymentID){
