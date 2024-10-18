@@ -16,7 +16,7 @@ class Invoice extends Model
         'sub_total',
         'payable',
         'trans_id',
-        'val_id',
+        'coupon_code',
         'gateway',
         'payment_id',
         'delivery_status',

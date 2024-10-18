@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('first_name',120);
             $table->string('last_name',120);
-            $table->string('billing_address',120);
-            $table->string('shipping_address',120);
-            $table->string('mailing_address',120);
+            $table->string('phone',120);
+            $table->string('current_address',120);
+            $table->string('permanent_address',120);
             $table->string('profile_image',120);
             
             // make the relation with user table 

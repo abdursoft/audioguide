@@ -51,7 +51,7 @@ class Helper extends Controller {
     /**
      * Google event handler
      */
-    public function ga4(string $event, array $params) {
+    public static function ga4( string $event, array $params ) {
         $measurement_id = 'G-XXXXXXXXXX';
         $api_secret     = 'api_secret_key';
         $url            = "https://www.google-analytics.com/mp/collect?measurement_id=" . $measurement_id . "&api_secret=" . $api_secret;
@@ -76,5 +76,33 @@ class Helper extends Controller {
         $context = stream_context_create( $options );
         $resp    = file_get_contents( $url, false, $context );
         return $resp;
+    }
+
+    /**
+     * Return the price according coupon
+     */
+    public static function couponPrice( $coupon, $limit, $price ) {
+        if ( $coupon->status == 'active' && $coupon->min_purchase <= $price ) {
+            if ( strtotime( $coupon->expired_at ) > time() && time() > strtotime( $coupon->started_at ) ) {
+                if ( $coupon->limitation == 0 ) {
+                    if ( $coupon->coupon_type === 'percent' ) {
+                        $price = $price - ( ( $price * $coupon->amount ) / 100 );
+                    } else {
+                        $price = $price - $coupon->amount;
+                    }
+                } elseif ( $coupon->limitation > 0 && $coupon->limitation > $limit ) {
+                    if ( $coupon->coupon_type === 'percent' ) {
+                        $price = $price - ( ( $price * $coupon->amount ) / 100 );
+                    } else {
+                        $price = $price - $coupon->amount;
+                    }
+                } else {
+                    $price = $price;
+                }
+            }
+            return $price;
+        } else {
+            return $price;
+        }
     }
 }

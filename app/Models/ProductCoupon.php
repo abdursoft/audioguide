@@ -10,10 +10,16 @@ class ProductCoupon extends Model
     use HasFactory;
 
     protected $fillable = [
+        'title',
+        'sub_title',
+        'banner',
         'coupon',
-        'start_date',
-        'end_date',
+        'started_at',
+        'expired_at',
         'amount',
+        'status',
+        'limitation',
+        'coupon_type',
         'min_purchase',
     ];
 }

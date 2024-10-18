@@ -54,6 +54,7 @@ class AudioGuide extends Model
         'cover', 
         'remark',
         'discount',
+        'type',
         'category_id',
         'short_description'
     ];

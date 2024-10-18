@@ -13,7 +13,9 @@ use App\Http\Controllers\ProductWishController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\UserBillingController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\UserShippingController;
 use App\Http\Middleware\AdminAuth;
 use App\Http\Middleware\UserAuthentication;
 use Illuminate\Http\Request;
@@ -41,6 +43,21 @@ Route::prefix('v1/users')->group(function(){
         Route::apiResource('wishlist', ProductWishController::class);
         Route::apiResource('invoice', InvoiceController::class);
         // guide wishlist section end
+
+        // billing start 
+        Route::get('/billing', [UserBillingController::class, 'show']);
+        Route::post('/billing/add', [UserBillingController::class, 'store']);
+        Route::post('/billing/edit', [UserBillingController::class, 'store']);
+        Route::delete('/billing/delete', [UserBillingController::class, 'destroy']);
+        // billing end        
+
+
+        // shipping start 
+        Route::get('/shipping', [UserShippingController::class, 'show']);
+        Route::post('/shipping/add', [UserShippingController::class, 'store']);
+        Route::post('/shipping/edit', [UserShippingController::class, 'store']);
+        Route::delete('/shipping/delete', [UserShippingController::class, 'destroy']);
+        // shipping end        
     });
 });
 

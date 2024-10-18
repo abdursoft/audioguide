@@ -19,7 +19,7 @@ return new class extends Migration
             $table->decimal('sub_total');
             $table->decimal('payable');
             $table->string('trans_id',300);
-            $table->string('val_id',10);
+            $table->string('coupon_code',10)->nullable();
             $table->string('gateway',300)->nullable();
             $table->string('payment_id',400)->nullable();
             $table->enum('delivery_status',["pending","complete"])->default('pending');

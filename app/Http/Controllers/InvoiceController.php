@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Helper\Helper;
 use App\Http\Controllers\Payment\StripeController;
 use App\Mail\InvoiceMail;
 use App\Models\Invoice;
 use App\Models\InvoiceProduct;
 use App\Models\ProductCart;
+use App\Models\ProductCoupon;
 use App\Models\Profile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -41,6 +43,14 @@ class InvoiceController extends Controller {
             $total = ProductCart::where( 'user_id', $request->header( 'id' ) )->sum( 'price' );
             $discount = ProductCart::where('user_id', $request->header('id'))->sum('discount');
 
+            if(!empty($request->input('coupon_code'))){
+                $coupon = ProductCoupon::where('coupon', $request->input('coupon_code'))->first();
+
+                $invoice = Invoice::where('user_id',$request->header('id'))->where('coupon',$request->input('coupon_code'))->count();
+
+                $total = Helper::couponPrice($coupon,$invoice,$total);
+            }
+
             DB::beginTransaction();
             $transID = uniqid();
             $invoice = Invoice::create( [
@@ -49,7 +59,7 @@ class InvoiceController extends Controller {
                 'payable'         => $total,
                 'discount'        => $discount,
                 'trans_id'        => $transID,
-                'val_id'          => 0,
+                'coupon_code'     => $request->input('coupon_code') ?? null,
                 'delivery_status' => 'pending',
                 'payment_status'  => 'pending',
                 'user_id'         => $request->header('id'),
