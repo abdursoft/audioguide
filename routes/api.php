@@ -8,6 +8,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PasswordController;
 use App\Http\Controllers\ProductCartController;
+use App\Http\Controllers\ProductCouponController;
 use App\Http\Controllers\ProductOfferController;
 use App\Http\Controllers\ProductWishController;
 use App\Http\Controllers\SectionController;
@@ -82,6 +83,13 @@ Route::prefix('v1/admin')->group(function(){
         Route::apiResource('audio-description',AudioDescriptionController::class);
         Route::apiResource('audio-faq',AudioFaqController::class);
         Route::apiResource('product-offer',ProductOfferController::class);
+
+        // coupon section start
+        Route::post('coupon', [ProductCouponController::class, 'store']);
+        Route::get('coupon/{id?}', [ProductCouponController::class, 'show']);
+        Route::put('coupon/{id}', [ProductCouponController::class, 'update']);
+        Route::delete('coupon/{id}', [ProductCouponController::class, 'destroy']);
+        // coupon section end
 
         // subscription section start 
         Route::apiResource('subscription', SubscriptionController::class);

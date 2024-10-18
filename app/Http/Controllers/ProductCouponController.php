@@ -14,7 +14,7 @@ class ProductCouponController extends Controller {
     public function index() {
         return response()->json( [
             'status'  => true,
-            'message' => 'Coupon successfully retrieved',
+            'message' => 'Coupon code successfully retrieved',
             'data'    => ProductCoupon::all(),
         ], 200 );
     }
@@ -31,13 +31,15 @@ class ProductCouponController extends Controller {
      */
     public function store( Request $request ) {
         $validate = Validator::make( $request->all(), [
-            'title'       => 'required|string|unique:product_coupons',
-            'code'        => 'required|string|unique:product_coupons,code,' . $request->input( 'id' ) . ',id',
-            'amount'      => 'required|string',
-            'coupon_type' => 'required|string',
-            'started_at'  => 'required',
-            'expired_at'  => 'required',
-            'banner'      => 'file|mimes:jpeg,jpg,png,webp',
+            'title'        => 'required|string|unique:product_coupons',
+            'code'         => 'required|string|unique:product_coupons,coupon',
+            'amount'       => 'required|string',
+            'coupon_type'  => 'required|string',
+            'started_at'   => 'required',
+            'expired_at'   => 'required',
+            'status'       => 'required',
+            'min_purchase' => 'required',
+            'banner'       => 'file|mimes:jpeg,jpg,png,webp',
         ] );
 
         if ( $validate->fails() ) {
@@ -51,24 +53,26 @@ class ProductCouponController extends Controller {
         try {
 
             ProductCoupon::create( [
-                'title'       => $request->input( 'title' ),
-                'sub_title'   => $request->input( 'sub_title' ) ?? null,
-                'code'        => $request->input( 'code' ),
-                'amount'      => $request->input( 'amount' ),
-                'coupon_type' => $request->input( 'coupon_type' ),
-                'started_at'  => $request->input( 'started_at' ),
-                'expired_at'  => $request->input( 'expired_at' ),
-                'banner'      => $request->hasFile( 'banner' ) ? Storage::disk( 'public' )->put( "uploads/" . date( 'Y' ) . "/" . date( 'F' ) . "/" . date( 'd' ), $request->file( 'banner' ) ) : null,
+                'title'        => $request->input( 'title' ),
+                'sub_title'    => $request->input( 'sub_title' ) ?? null,
+                'coupon'       => $request->input( 'code' ),
+                'amount'       => $request->input( 'amount' ),
+                'coupon_type'  => $request->input( 'coupon_type' ),
+                'started_at'   => $request->input( 'started_at' ),
+                'expired_at'   => $request->input( 'expired_at' ),
+                'status'       => $request->input( 'status' ),
+                'min_purchase' => $request->input( 'min_purchase' ),
+                'banner'       => $request->hasFile( 'banner' ) ? Storage::disk( 'public' )->put( "uploads/" . date( 'Y' ) . "/" . date( 'F' ) . "/" . date( 'd' ), $request->file( 'banner' ) ) : null,
             ] );
 
             return response()->json( [
                 'status'  => 'success',
-                'message' => 'Coupon successfully saved',
+                'message' => 'Coupon code successfully saved',
             ], 200 );
         } catch ( \Throwable $th ) {
             return response()->json( [
                 'status'  => 'fail',
-                'message' => 'Coupon couldn\'t save',
+                'message' => 'Coupon code couldn\'t save',
                 'error'   => $th->getMessage(),
             ], 400 );
         }
@@ -77,12 +81,18 @@ class ProductCouponController extends Controller {
     /**
      * Display the specified resource.
      */
-    public function show( ProductCoupon $productCoupon ) {
+    public function show( ProductCoupon $productCoupon,$id=null ) {
+        if($id !== null){
+            $coupons = ProductCoupon::find($id);
+        }else{
+            $coupons = ProductCoupon::all();
+        }
         return response()->json( [
             'status'  => true,
-            'message' => 'Coupon successfully retrieved',
-            'data'    => $productCoupon,
+            'message' => 'Coupon code successfully retrieved',
+            'data'    => $coupons,
         ], 200 );
+
     }
 
     /**
@@ -95,55 +105,72 @@ class ProductCouponController extends Controller {
     /**
      * Update the specified resource in storage.
      */
-    public function update( Request $request, ProductCoupon $productCoupon ) {
+    public function update( Request $request, $id ) {
         $validate = Validator::make( $request->all(), [
-            'title'       => 'required|string|unique:product_coupons,' . $productCoupon->id . ',id',
-            'code'        => 'required|string|unique:product_coupons,code,' . $productCoupon->id . ',id',
-            'amount'      => 'required|string',
-            'coupon_type' => 'required|string',
-            'started_at'  => 'required',
-            'expired_at'  => 'required',
-            'banner'      => 'file|mimes:jpeg,jpg,png,webp',
+            'title'        => 'required|string|unique:product_coupons,title,' . $id . ',id',
+            'code'         => 'required|string|unique:product_coupons,coupon,' . $id . ',id',
+            'amount'       => 'required|string',
+            'coupon_type'  => 'required|string',
+            'started_at'   => 'required',
+            'expired_at'   => 'required',
+            'status'       => 'required',
+            'min_purchase' => 'required',
+            'banner'       => 'file|mimes:jpeg,jpg,png,webp',
         ] );
 
         if ( $validate->fails() ) {
             return response()->json( [
                 'status'  => 'fail',
-                'message' => 'Coupon couldn\'t update',
+                'message' => 'Coupon code couldn\'t update',
                 'errors'  => $validate->errors(),
             ], 400 );
         }
 
         try {
+            $productCoupon = ProductCoupon::find($id);
             $productCoupon->update( [
-                'title'       => $request->input( 'title' ) ?? $productCoupon->title,
-                'sub_title'   => $request->input( 'sub_title' ) ?? $productCoupon->sub_title,
-                'code'        => $request->input( 'code' ),
-                'amount'      => $request->input( 'amount' ),
-                'coupon_type' => $request->input( 'coupon_type' ),
-                'started_at'  => $request->input( 'started_at' ),
-                'expired_at'  => $request->input( 'expired_at' ),
-                'banner'      => $request->hasFile( 'banner' ) ? Storage::disk( 'public' )->put( "uploads/" . date( 'Y' ) . "/" . date( 'F' ) . "/" . date( 'd' ), $request->file( 'banner' ) ) : $productCoupon->banner,
+                'title'        => $request->input( 'title' ) ?? $productCoupon->title,
+                'sub_title'    => $request->input( 'sub_title' ) ?? $productCoupon->sub_title,
+                'coupon'       => $request->input( 'code' ),
+                'amount'       => $request->input( 'amount' ),
+                'coupon_type'  => $request->input( 'coupon_type' ),
+                'started_at'   => $request->input( 'started_at' ),
+                'expired_at'   => $request->input( 'expired_at' ),
+                'status'       => $request->input( 'status' ),
+                'min_purchase' => $request->input( 'min_purchase' ),
+                'banner'       => $request->hasFile( 'banner' ) ? Storage::disk( 'public' )->put( "uploads/" . date( 'Y' ) . "/" . date( 'F' ) . "/" . date( 'd' ), $request->file( 'banner' ) ) : $productCoupon->banner,
             ] );
             ( $request->hasFile( 'banner' ) && $productCoupon->banner != null ) ? Storage::disk( 'public' )->delete( $productCoupon->banner ) : null;
 
             return response()->json( [
                 'status'  => 'success',
-                'message' => 'Coupon successfully updated',
+                'message' => 'Coupon code successfully updated',
             ], 200 );
         } catch ( \Throwable $th ) {
             return response()->json( [
                 'status'  => 'fail',
-                'message' => 'Coupon couldn\'t update',
+                'message' => 'Coupon code couldn\'t update',
                 'error'   => $th->getMessage(),
             ], 400 );
         }
     }
 
     /**
+     * Get the single coupon
+     */
+    public function singleCoupon($id){
+        return response()->json( [
+            'status'  => true,
+            'message' => 'Coupon code successfully retrieved',
+            'data'    => ProductCoupon::find($id),
+        ], 200 );
+    }
+
+    /**
      * Remove the specified resource from storage.
      */
-    public function destroy( ProductCoupon $productCoupon ) {
+    public function destroy( ProductCoupon $productCoupon, $id ) {
+        $productCoupon = ProductCoupon::find($id);
         if ( $productCoupon ) {
             $productCoupon->banner != null ? Storage::disk( 'public' )->delete( $productCoupon->banner ) : null;
             $productCoupon->delete();
@@ -163,7 +190,7 @@ class ProductCouponController extends Controller {
      * Verify user coupon
      */
     public function couponVerify( Request $request ) {
-        if ( !empty( $request->input( 'code' ) ) ) {
+        if ( !empty( $request->input( 'coupon_code' ) ) ) {
             $coupon = ProductCoupon::where( 'coupon_code', $request->input( 'coupon_code' ) )->first();
             if ( $coupon ) {
                 if ( strtotime( $coupon->expired_at ) > time() && time() > strtotime( $coupon->started_at ) ) {
