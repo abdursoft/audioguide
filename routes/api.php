@@ -68,7 +68,7 @@ Route::prefix('v1/admin')->group(function(){
     Route::post('signin', [UserController::class, 'login']);
 
     Route::middleware([AdminAuth::class])->group(function(){
-        Route::post('auth', [UserController::class, 'adminAuth']);
+        Route::get('auth', [UserController::class, 'adminAuth']);
 
         Route::apiResource('category', CategoryController::class);
         // category section end

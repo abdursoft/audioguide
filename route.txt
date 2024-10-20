@@ -1,0 +1,102 @@
+  GET|HEAD        / ...............................................................................................
+  GET|HEAD        api/user ........................................................................................
+  GET|HEAD        api/v1/admin/audio-content ................... audio-content.index › AudioContentController@index
+  POST            api/v1/admin/audio-content ................... audio-content.store › AudioContentController@store
+  GET|HEAD        api/v1/admin/audio-content/{audio_content} ..... audio-content.show › AudioContentController@show
+  PUT|PATCH       api/v1/admin/audio-content/{audio_content} . audio-content.update › AudioContentController@update
+  DELETE          api/v1/admin/audio-content/{audio_content} audio-content.destroy › AudioContentController@destroy
+  GET|HEAD        api/v1/admin/audio-description ....... audio-description.index › AudioDescriptionController@index
+  POST            api/v1/admin/audio-description ....... audio-description.store › AudioDescriptionController@store
+  GET|HEAD        api/v1/admin/audio-description/{audio_description} audio-description.show › AudioDescriptionCont…
+  PUT|PATCH       api/v1/admin/audio-description/{audio_description} audio-description.update › AudioDescriptionCo…
+  DELETE          api/v1/admin/audio-description/{audio_description} audio-description.destroy › AudioDescriptionC…
+  GET|HEAD        api/v1/admin/audio-faq ............................... audio-faq.index › AudioFaqController@index
+  POST            api/v1/admin/audio-faq ............................... audio-faq.store › AudioFaqController@store
+  GET|HEAD        api/v1/admin/audio-faq/{audio_faq} ..................... audio-faq.show › AudioFaqController@show
+  PUT|PATCH       api/v1/admin/audio-faq/{audio_faq} ................. audio-faq.update › AudioFaqController@update
+  DELETE          api/v1/admin/audio-faq/{audio_faq} ............... audio-faq.destroy › AudioFaqController@destroy
+  GET|HEAD        api/v1/admin/audio-guide ......................... audio-guide.index › AudioGuideController@index
+  POST            api/v1/admin/audio-guide ......................... audio-guide.store › AudioGuideController@store
+  GET|HEAD        api/v1/admin/audio-guide/{audio_guide} ............. audio-guide.show › AudioGuideController@show
+  PUT|PATCH       api/v1/admin/audio-guide/{audio_guide} ......... audio-guide.update › AudioGuideController@update
+  DELETE          api/v1/admin/audio-guide/{audio_guide} ....... audio-guide.destroy › AudioGuideController@destroy
+  POST            api/v1/admin/auth ...................................................... UserController@adminAuth
+  GET|HEAD        api/v1/admin/category ................................. category.index › CategoryController@index
+  POST            api/v1/admin/category ................................. category.store › CategoryController@store
+  GET|HEAD        api/v1/admin/category/{category} ........................ category.show › CategoryController@show
+  PUT|PATCH       api/v1/admin/category/{category} .................... category.update › CategoryController@update
+  DELETE          api/v1/admin/category/{category} .................. category.destroy › CategoryController@destroy
+  POST            api/v1/admin/coupon ............................................... ProductCouponController@store
+  GET|HEAD        api/v1/admin/coupon/{id?} .......................................... ProductCouponController@show
+  PUT             api/v1/admin/coupon/{id} ......................................... ProductCouponController@update
+  DELETE          api/v1/admin/coupon/{id} ........................................ ProductCouponController@destroy
+  GET|HEAD        api/v1/admin/product-offer ................... product-offer.index › ProductOfferController@index
+  POST            api/v1/admin/product-offer ................... product-offer.store › ProductOfferController@store
+  GET|HEAD        api/v1/admin/product-offer/{product_offer} ..... product-offer.show › ProductOfferController@show
+  PUT|PATCH       api/v1/admin/product-offer/{product_offer} . product-offer.update › ProductOfferController@update
+  DELETE          api/v1/admin/product-offer/{product_offer} product-offer.destroy › ProductOfferController@destroy
+  GET|HEAD        api/v1/admin/section .................................... section.index › SectionController@index
+  POST            api/v1/admin/section .................................... section.store › SectionController@store
+  GET|HEAD        api/v1/admin/section/{section} ............................ section.show › SectionController@show
+  PUT|PATCH       api/v1/admin/section/{section} ........................ section.update › SectionController@update
+  DELETE          api/v1/admin/section/{section} ...................... section.destroy › SectionController@destroy
+  GET|HEAD        api/v1/admin/settings ................................. settings.index › SettingsController@index
+  POST            api/v1/admin/settings ................................. settings.store › SettingsController@store
+  GET|HEAD        api/v1/admin/settings/{setting} ......................... settings.show › SettingsController@show
+  PUT|PATCH       api/v1/admin/settings/{setting} ..................... settings.update › SettingsController@update
+  DELETE          api/v1/admin/settings/{setting} ................... settings.destroy › SettingsController@destroy
+  POST            api/v1/admin/signin ........................................................ UserController@login
+  GET|HEAD        api/v1/admin/subscription ..................... subscription.index › SubscriptionController@index
+  POST            api/v1/admin/subscription ..................... subscription.store › SubscriptionController@store
+  GET|HEAD        api/v1/admin/subscription/{subscription} ........ subscription.show › SubscriptionController@show
+  PUT|PATCH       api/v1/admin/subscription/{subscription} .... subscription.update › SubscriptionController@update
+  DELETE          api/v1/admin/subscription/{subscription} .. subscription.destroy › SubscriptionController@destroy
+  GET|HEAD        api/v1/client/audio/by/content/{id} ......................... AudioGuideController@audioByContent
+  GET|HEAD        api/v1/client/audio/contents ....................................... AudioContentController@index
+  GET|HEAD        api/v1/client/audio/contents/{id} .......................... AudioContentController@singleContent
+  GET|HEAD        api/v1/client/audio/pagination ................................... AudioGuideController@onlyGuide
+  GET|HEAD        api/v1/client/category ................................................. CategoryController@index
+  GET|HEAD        api/v1/client/category/{category}/audio ...................... CategoryController@categoryByGuide
+  GET|HEAD        api/v1/client/sections .................................................. SectionController@index
+  GET|HEAD        api/v1/client/sections/{id} ..................................... SectionController@singleSection
+  GET|HEAD        api/v1/client/settings/{id} ............................................ SettingsController@index
+  GET|HEAD        api/v1/client/subscriptions ........................................ SubscriptionController@index
+  GET|HEAD        api/v1/client/subscriptions/{id?} ..................... SubscriptionController@singleSubScription
+  POST            api/v1/password/new ............................................ PasswordController@passwordReset
+  POST            api/v1/password/send-otp ............................................. PasswordController@sendOTP
+  POST            api/v1/password/verify-otp ......................................... PasswordController@verifyOTP
+  GET|HEAD        api/v1/users/billing ................................................. UserBillingController@show
+  POST            api/v1/users/billing/add ............................................ UserBillingController@store
+  DELETE          api/v1/users/billing/delete ....................................... UserBillingController@destroy
+  POST            api/v1/users/billing/edit ........................................... UserBillingController@store
+  GET|HEAD        api/v1/users/cart ...................................... cart.index › ProductCartController@index
+  POST            api/v1/users/cart ...................................... cart.store › ProductCartController@store
+  GET|HEAD        api/v1/users/cart/{cart} ................................. cart.show › ProductCartController@show
+  PUT|PATCH       api/v1/users/cart/{cart} ............................. cart.update › ProductCartController@update
+  DELETE          api/v1/users/cart/{cart} ........................... cart.destroy › ProductCartController@destroy
+  GET|HEAD        api/v1/users/invoice .................................... invoice.index › InvoiceController@index
+  POST            api/v1/users/invoice .................................... invoice.store › InvoiceController@store
+  GET|HEAD        api/v1/users/invoice/{invoice} ............................ invoice.show › InvoiceController@show
+  PUT|PATCH       api/v1/users/invoice/{invoice} ........................ invoice.update › InvoiceController@update
+  DELETE          api/v1/users/invoice/{invoice} ...................... invoice.destroy › InvoiceController@destroy
+  GET|HEAD        api/v1/users/shipping ............................................... UserShippingController@show
+  POST            api/v1/users/shipping/add .......................................... UserShippingController@store
+  DELETE          api/v1/users/shipping/delete ..................................... UserShippingController@destroy
+  POST            api/v1/users/shipping/edit ......................................... UserShippingController@store
+  POST            api/v1/users/signin ........................................................ UserController@login
+  POST            api/v1/users/signup ........................................................ UserController@store
+  POST            api/v1/users/signup-otp-verify ................................... UserController@verifySignupOTP
+  GET|HEAD        api/v1/users/wishlist .............................. wishlist.index › ProductWishController@index
+  POST            api/v1/users/wishlist .............................. wishlist.store › ProductWishController@store
+  GET|HEAD        api/v1/users/wishlist/{wishlist} ..................... wishlist.show › ProductWishController@show
+  PUT|PATCH       api/v1/users/wishlist/{wishlist} ................. wishlist.update › ProductWishController@update
+  DELETE          api/v1/users/wishlist/{wishlist} ............... wishlist.destroy › ProductWishController@destroy
+  GET|HEAD        auth/facebook ......................................... FacebookController@handleFacebookCallback
+  GET|HEAD        auth/google ............................................... GoogleController@handleGoogleCallback
+  GET|HEAD        login/facebook ........................... login.facebook › FacebookController@redirectToFacebook
+  GET|HEAD        login/google .................................................. GoogleController@redirectToGoogle
+  GET|HEAD        payment/stripe/cancel ..................................... Payment\CancelController@stripeCancel
+  GET|HEAD        payment/stripe/success .................................. Payment\SuccessController@stripeSuccess
+  GET|HEAD        sanctum/csrf-cookie ........... sanctum.csrf-cookie › Laravel\Sanctum › CsrfCookieController@show
+  GET|HEAD        storage/{path} .................................................................... storage.local
+  GET|HEAD        up ..............................................................................................

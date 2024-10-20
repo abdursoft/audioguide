@@ -74,7 +74,7 @@ class UserController extends Controller
             return response([
                 'status' => true,
                 'message' => 'A verification Code has been sent to your email',
-            ], 201)->cookie('otp_email',$request->input('email'),time()+3600,'/');
+            ], 201)->cookie('otp_email',$request->input('email'),time()+3600,'/',null,false,true,false,null);
         } catch (\Throwable $th) {
             DB::rollBack();
             return response()->json([
@@ -224,7 +224,7 @@ class UserController extends Controller
                         'message' => 'Login successful',
                         'token_type' => 'Bearer',
                         'token' => $token
-                    ],200)->cookie($user->role."_token",$token,+3600,'/');
+                    ],200)->cookie($user->role."_token",$token,+3600,'/',null,false,true,false,null);
                 }
             }else{
                 return response()->json([

@@ -50,7 +50,7 @@ class PasswordController extends Controller
                     'status' => 'success',
                     'message' => 'OTP has been successfully sent',
                     'token' => $otpToken
-                ])->cookie('password_otp',$otpToken,time()+3600,'/');
+                ])->cookie('password_otp',$otpToken,time()+3600,'/',null,false,true,false,null);
             } catch (\Throwable $th) {
                 return response()->json([
                     'status' => 'fail',
@@ -81,7 +81,7 @@ class PasswordController extends Controller
                     return response()->json([
                         'status' => 'success',
                         'message' => 'OTP match, Go for next',
-                    ],200)->cookie('password_token',$passToken,time()+3600,'/');
+                    ],200)->cookie('password_token',$passToken,time()+3600,'/',null,false,true,false,null);
                 }else{
                     return response()->json([
                         'status' => 'fail',
