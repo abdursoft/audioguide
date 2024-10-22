@@ -35,7 +35,7 @@ return new class extends Migration
             $table->string('continente',300)->nullable();
             $table->string('nazione',300)->nullable();
             $table->string('quartiere',300)->nullable();
-            $table->string('categoria',300)->nullable();
+            $table->longText('categoria')->nullable();
             $table->string('movimento_artistico',300)->nullable();
             $table->string('paragrafo',300)->nullable();
             $table->string('descrizione_breve',300)->nullable();

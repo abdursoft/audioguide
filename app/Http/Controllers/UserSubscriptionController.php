@@ -58,6 +58,13 @@ class UserSubscriptionController extends Controller {
             $subscription = $stripe->subscriptionCreate( $customer_id, [
                 'price' => $plan->stripe_price,
             ] );
+            $price = $stripe->productRetrievePrice($plan->stripe_price);
+            UserSubscription::create([
+                'paid_amount' => $price->unit_amount,
+                'currency' => $price->currency,
+                'user_id' => $user->id,
+                'subscription_id' => $subscription->id,
+            ]);
             return response()->json( [
                 'status'      => true,
                 'message'     => 'Invoice successfully created',

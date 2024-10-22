@@ -59,6 +59,11 @@ class StripeController extends Controller
         return $setPrice;
     }
 
+    public function productRetrievePrice(string $id)
+    {
+        return $this->pay->prices->retrieve($id,[]);
+    }
+
     public function productRetrieve(string $id)
     {
         $retrieve = $this->pay->products->retrieve(

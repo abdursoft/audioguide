@@ -11,6 +11,7 @@ class UserGuide extends Model
 
     protected $fillable = [
         'user_id',
+        'payment_type',
         'audio_guide_id'
     ];
 }
