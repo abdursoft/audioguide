@@ -16,7 +16,7 @@ class AdminAuth
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // return response()->json($request->header());
+        // return response()->json($request->cookie());
         if(empty($request->header('Authorization')) || !$request->header('Authorization') || $request->header('Authorization') == ''){
             $token = JWTAuth::verifyToken($request->cookie('admin_token'),false);
         }else{

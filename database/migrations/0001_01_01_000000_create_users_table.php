@@ -19,6 +19,7 @@ return new class extends Migration
             $table->enum('role',['user','admin'])->default('user');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('customer_id',300)->nullable();
             $table->string('social_id')->nullable();
             $table->string('social_type')->nullable();
             $table->boolean('is_verified')->default(0);

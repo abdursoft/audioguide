@@ -46,13 +46,14 @@ class StripeController extends Controller
         return $product;
     }
 
-    public function productPrice(string $id, int|float $price, string $currency)
+    public function productPrice(string $id, int|float $price, string $currency,$interval='year')
     {
         $setPrice = $this->pay->prices->create(
             [
                 'product' => $id,
                 'unit_amount' => $price * 100,
-                'currency' => $currency
+                'currency' => $currency,
+                'recurring' => ['interval' => $interval],
             ]
         );
         return $setPrice;
@@ -69,6 +70,16 @@ class StripeController extends Controller
 
     public function productDelete($product){
         $this->pay->products->delete($product, []);
+    }
+
+    public function subscriptionCreate(string $customer_id, array $items){
+        return $this->pay->subscriptions->create([
+            'customer' => $customer_id,
+            'items' => [$items],
+            'payment_behavior' => 'default_incomplete',
+            'payment_settings' => ['save_default_payment_method' => 'on_subscription'], 
+            'expand' => ['latest_invoice.payment_intent'], 
+          ]);
     }
 
 

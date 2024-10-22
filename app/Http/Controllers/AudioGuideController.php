@@ -42,7 +42,11 @@ class AudioGuideController extends Controller {
             ] );
         } else {
             $validator = Validator::make( $request->all(), [
-                'file' => 'required|mimes:csv,xlsx',
+                'file'          => 'required|file',
+                'cover'         => 'required|file|mimes:jpeg,jpg,png,webp',
+                'description'   => 'required',
+                'title'         => 'required|unique:audio_guides,title',
+                'cal_to_action' => 'required',
             ] );
         }
 
@@ -51,7 +55,7 @@ class AudioGuideController extends Controller {
                 'status'  => false,
                 'message' => 'Audio guide couldn\'t create',
                 'errors'  => $validator->errors(),
-            ] );
+            ], 400 );
         }
 
         if ( $request->hasFile( 'file' ) ) {
@@ -63,10 +67,14 @@ class AudioGuideController extends Controller {
 
             if ( 'csv' == $extension ) {
                 $reader = new \PhpOffice\PhpSpreadsheet\Reader\Csv();
-            } else if ( 'xls' == $extension ) {
-                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
             } else {
+                return response()->json( [
+                    'status'  => false,
+                    'message' => 'File type must be CSV',
+                ], 400 );
                 $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+                $reader->setReadDataOnly( true );
             }
             $reader->setInputEncoding( 'UTF-8' );
             $reader->setDelimiter( ',' );
@@ -81,6 +89,7 @@ class AudioGuideController extends Controller {
             for ( $i = 1; $i < count( $data ); $i++ ) {
                 $sheetData[] = $this->combineData( $data[$i], $keys );
             }
+            // return response()->json($sheetData);
 
             try {
                 DB::beginTransaction();
@@ -103,18 +112,19 @@ class AudioGuideController extends Controller {
                             }
                         }
                         $audio_guide = AudioGuide::create( [
-                            "name"        => $key_name,
-                            "title"       => $request->input( 'title' ) ?? $file_name[0],
-                            "status"      => $request->input( 'status' ),
-                            "price"       => $request->input( 'price' ),
-                            "cover"       => $request->input( 'cover' ),
-                            "category_id" => $category,
+                            "name"           => $key_name,
+                            "title"          => $request->input( 'title' ) ?? $file_name[0],
+                            "status"         => $request->input( 'status' ),
+                            "price"          => $request->input( 'price' ),
+                            "cover"          => $request->input( 'cover' ),
+                            "category_id"    => $category,
+                            "call_to_action" => $request->input( 'call_to_action' ),
                         ] );
                     }
                     $item['audio_guide_id'] = $audio_guide->id;
                     AudioContent::create( $item );
                 }
-                if ( $audio_guide !== null && !empty($request->input( 'description' )) ) {
+                if ( $audio_guide !== null && !empty( $request->input( 'description' ) ) ) {
                     $desc        = Helper::descriptionSanitize( $request->input( 'description' ) );
                     $description = AudioDescription::create( [
                         'files'          => $desc['files'],
@@ -175,13 +185,13 @@ class AudioGuideController extends Controller {
     /**
      * Update the specified resource in storage.
      */
-    public function update(  AudioGuide $audioGuide, Request $request ) {
+    public function update( AudioGuide $audioGuide, Request $request ) {
         $validator = Validator::make( $request->all(), [
-            'category'       => 'required|unique:categories,name',
-            'title'          => 'required',
-            'cover'          => 'file|mimes:jpeg,jpg,png,webp',
-            'status'         => 'required',
-            'price'          => 'required',
+            'category' => 'required|unique:categories,name',
+            'title'    => 'required',
+            'cover'    => 'file|mimes:jpeg,jpg,png,webp',
+            'status'   => 'required',
+            'price'    => 'required',
         ] );
 
         if ( $validator->fails() ) {
@@ -193,7 +203,7 @@ class AudioGuideController extends Controller {
         }
 
         try {
-            $cover  = $audioGuide->cover;
+            $cover = $audioGuide->cover;
             if ( $request->hasFile( 'cover' ) ) {
                 $cover = Storage::disk( 'public' )->put( 'audio-guide', $request->file( 'cover' ) );
             }

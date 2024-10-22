@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Payment\StripeController;
 use App\Models\Subscription;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class SubscriptionController extends Controller
@@ -51,12 +53,23 @@ class SubscriptionController extends Controller
         }
 
         try {
-            Subscription::create($validator->validate());
+            DB::beginTransaction();
+            $stripe = new StripeController();
+            $product = $stripe->productCreate($request->input('title'),$request->input('description'),$request->input('price'));
+            $price = $stripe->productPrice($product->id,$request->input('price'),$request->input('currency'));
+            $data = array_merge($validator->validate(),[
+                'stripe_id' => $product->id,
+                'stripe_price' => $price->id
+            ]);
+
+            Subscription::create($data);
+            DB::commit();
             return response()->json([
                 'status' => true,
                 'message' => 'Subscription plan successfully created'
             ],201);
         } catch (\Throwable $th) {
+            DB::rollBack();
             return response()->json([
                 'status' => false,
                 'message' => 'Subscription plan couldn\'t create',

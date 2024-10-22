@@ -10,6 +10,8 @@ class Subscription extends Model
     use HasFactory;
 
     protected $fillable = [
+        'stripe_id',
+        'stripe_price',
         'title',
         'description',
         'price',

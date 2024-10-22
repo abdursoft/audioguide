@@ -21,6 +21,7 @@ class User extends Authenticatable
         'password',
         'otp',
         'social_id',
+        'customer_id',
         'social_type'
     ];
 
