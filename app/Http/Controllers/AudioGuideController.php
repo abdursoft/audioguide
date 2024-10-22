@@ -46,7 +46,7 @@ class AudioGuideController extends Controller {
                 'cover'         => 'required|file|mimes:jpeg,jpg,png,webp',
                 'description'   => 'required',
                 'title'         => 'required|unique:audio_guides,title',
-                'cal_to_action' => 'required',
+                'call_to_action' => 'required',
             ] );
         }
 
@@ -116,9 +116,9 @@ class AudioGuideController extends Controller {
                             "title"          => $request->input( 'title' ) ?? $file_name[0],
                             "status"         => $request->input( 'status' ),
                             "price"          => $request->input( 'price' ),
-                            "cover"          => $request->input( 'cover' ),
+                            "cover"          => Storage::disk('public')->put('guides',$request->file('cover')),
                             "category_id"    => $category,
-                            "call_to_action" => $request->input( 'call_to_action' ),
+                            "cal_to_action" => $request->input( 'call_to_action' ),
                         ] );
                     }
                     $item['audio_guide_id'] = $audio_guide->id;

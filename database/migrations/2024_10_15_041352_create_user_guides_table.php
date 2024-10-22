@@ -11,6 +11,7 @@ return new class extends Migration {
     public function up(): void {
         Schema::create( 'user_guides', function ( Blueprint $table ) {
             $table->id();
+            $table->enum('payment_type',['fixed','subscription'])->default('fixed');
 
             // make the relation with user table
             $table->unsignedBigInteger( 'user_id' );
