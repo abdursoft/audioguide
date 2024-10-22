@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('settings', function (Blueprint $table) {
             $table->id();
             $table->string('logo',400);
+            $table->string('brand_logo',400);
+            $table->string('mobile_logo',400);
             $table->string('icon',400);
             $table->string('title',300);
             $table->string('short_description',400);

@@ -11,6 +11,8 @@ class Settings extends Model
 
     protected $fillable = [
         'logo',
+        'brand_logo',
+        'mobile_logo',
         'icon',
         'title',
         'phone',

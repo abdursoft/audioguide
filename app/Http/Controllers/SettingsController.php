@@ -35,6 +35,8 @@ class SettingsController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'logo' => 'required|file|mimes:jpeg,jpg,png,webp',
+            'brand_logo' => 'required|file|mimes:jpeg,jpg,png,webp',
+            'mobile_logo' => 'required|file|mimes:jpeg,jpg,png,webp',
             'icon' => 'required|file|mimes:png',
             'title' => 'required|max:50',
             'phone' => 'required|max:15',
@@ -61,6 +63,8 @@ class SettingsController extends Controller
                 ],
                 [
                     'logo' => Storage::disk('public')->put('settings',$request->file('logo')),
+                    'brand_logo' => Storage::disk('public')->put('settings',$request->file('brand_logo')),
+                    'mobile_logo' => Storage::disk('public')->put('settings',$request->file('mobile_logo')),
                     'icon' => Storage::disk('public')->put('settings',$request->file('icon')),
                     'title' => $request->input('title'),
                     'phone' => $request->input('phone'),
