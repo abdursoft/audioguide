@@ -21,6 +21,7 @@ return new class extends Migration
             $table->decimal('discount')->default(0);
             $table->string('cover',300)->nullable();
             $table->longText('short_description')->nullable();
+            $table->longText('call_to_action')->nullable();
             $table->enum('type', ['general','special'])->default('general');
 
             // make the relation with category table 

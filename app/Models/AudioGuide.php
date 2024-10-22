@@ -56,6 +56,7 @@ class AudioGuide extends Model
         'discount',
         'type',
         'category_id',
+        'call_to_action',
         'short_description'
     ];
 }
