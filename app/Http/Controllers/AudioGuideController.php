@@ -143,6 +143,15 @@ class AudioGuideController extends Controller {
                             ] );
                         }
                     }
+                    if(!empty($request->input('faqs'))){
+                        foreach ( $request->input('faqs') as $items ) {
+                            AudioFaq::create( [
+                                'question'             => $items['question'],
+                                'answer'               => $items['answer'],
+                                'audio_description_id' => $description->id,
+                            ] );
+                        }
+                    }
                 }
                 DB::commit();
                 return response()->json( [
@@ -171,7 +180,7 @@ class AudioGuideController extends Controller {
         return response()->json( [
             'status'  => true,
             'message' => 'Audio guide successfully retrieved',
-            'data'    => $audioGuide,
+            'data'    => $audioGuide->load(['Category','AudioDescription'],['AudioDescription.AudioFaq']),
         ], 200 );
     }
 
