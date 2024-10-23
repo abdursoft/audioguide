@@ -45,9 +45,12 @@ class AudioGuide extends Model
         return $this->belongsTo(Category::class);
     }
 
+    public function UserGuide(){
+        return $this->hasMany(UserGuide::class);
+    }
+
 
     protected $fillable = [
-        'name',
         'title',
         'price',
         'status',
@@ -55,6 +58,9 @@ class AudioGuide extends Model
         'remark',
         'discount',
         'type',
+        'theme',
+        'lessons',
+        'duration',
         'category_id',
         'call_to_action',
         'short_description'

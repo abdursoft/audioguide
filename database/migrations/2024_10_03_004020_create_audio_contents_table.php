@@ -38,7 +38,7 @@ return new class extends Migration
             $table->longText('categoria')->nullable();
             $table->string('movimento_artistico',300)->nullable();
             $table->string('paragrafo',300)->nullable();
-            $table->string('descrizione_breve',300)->nullable();
+            $table->longText('descrizione_breve')->nullable();
             $table->string('film',300)->nullable();
             $table->string('serie_tv',300)->nullable();
             $table->string('libro',300)->nullable();
@@ -63,6 +63,7 @@ return new class extends Migration
             $table->string('tag_description',300)->nullable();
             $table->string('status_value',300)->nullable();
             $table->string('single_price',300)->nullable();
+            $table->enum('is_free',['1','0'])->default('0');
 
             // make the relation with audio_guide table 
             $table->unsignedBigInteger('audio_guide_id');

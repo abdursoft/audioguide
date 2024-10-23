@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('audio_guides', function (Blueprint $table) {
             $table->id();
-            $table->string('name',400);
             $table->string('title',400);
             $table->enum('status', ['active','inactive'])->default('active');
             $table->decimal('price')->default(0);
@@ -22,6 +21,9 @@ return new class extends Migration
             $table->string('cover',300)->nullable();
             $table->longText('short_description')->nullable();
             $table->longText('call_to_action')->nullable();
+            $table->longText('theme')->nullable();
+            $table->bigInteger('lessons')->default(0);
+            $table->decimal('duration')->default(0);
             $table->enum('type', ['general','special'])->default('general');
 
             // make the relation with category table 

@@ -9,6 +9,10 @@ class UserGuide extends Model
 {
     use HasFactory;
 
+    public function AudioGuide(){
+        return $this->belongsTo(AudioGuide::class);
+    }
+
     protected $fillable = [
         'user_id',
         'payment_type',
