@@ -47,4 +47,28 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function UserSubscription(){
+        return $this->hasMany(UserSubscription::class);
+    }
+
+    public function UserGuide(){
+        return $this->hasMany(UserGuide::class);
+    }
+
+    public function UserBilling(){
+        return $this->hasOne(UserBilling::class);
+    }
+
+    public function UserShipping(){
+        return $this->hasOne(UserShipping::class);
+    }
+
+    public function Profile(){
+        return $this->hasOne(Profile::class);
+    }
+
+    public function ProductReview(){
+        return $this->hasMany(ProductReview::class);
+    }
 }

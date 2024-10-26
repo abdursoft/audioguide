@@ -16,6 +16,7 @@ class ProductCartController extends Controller {
             'status'  => true,
             'message' => 'Audio guide successfully retrieved',
             'data'    => ProductCart::with( 'AudioGuide', 'AudioGuide.ProductOffer' )->where( 'user_id', $request->header( 'id' ) )->get(),
+            'price'   => ProductCart::where( 'user_id', $request->header( 'id' ) )->sum('price')
         ], 200 );
     }
 
@@ -99,15 +100,18 @@ class ProductCartController extends Controller {
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy( ProductCart $productCart, Request $request ) {
+    public function destroy( Request $request, ProductCart $productCart ) {
         try {
-            if ( $productCart->user_id === $request->header( 'id' ) ) {
+            if ( $productCart->user_id == $request->header( 'id' ) ) {
                 $productCart->delete();
                 return response()->json( [
                     'status'  => 'success',
                     'message' => 'Product cart successfully removed',
                     'data'    => ProductCart::with( 'AudioGuide' )->where( 'user_id', $request->header( 'id' ) )->get(),
+                    'price'   => ProductCart::where( 'user_id', $request->header( 'id' ) )->sum('price')
                 ], 200 );
+            }else{
+                return response()->json($productCart);
             }
         } catch ( \Throwable $th ) {
             return response()->json( [
@@ -115,6 +119,29 @@ class ProductCartController extends Controller {
                 'message' => "Unauthorized Access",
                 'errors'  => $th->getMessage(),
             ], 400 );
+        }
+    }
+
+        /**
+     * Remove the specified resource from storage.
+     */
+    public function delete( Request $request, $id=null ) {
+        if($id !== null){
+            $productCart = ProductCart::find($id);
+            if ( $productCart->user_id == $request->header( 'id' ) ) {
+                $productCart->delete();
+                return response()->json( [
+                    'status'  => 'success',
+                    'message' => 'Product cart successfully removed',
+                    'data'    => ProductCart::with( 'AudioGuide' )->where( 'user_id', $request->header( 'id' ) )->get(),
+                    'price'   => ProductCart::where( 'user_id', $request->header( 'id' ) )->sum('price')
+                ], 200 );
+            }else{
+                return response()->json( [
+                    'status'  => 'fail',
+                    'message' => "Unauthorized Access",
+                ], 400 );
+            }
         }
     }
 }

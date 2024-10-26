@@ -13,6 +13,10 @@ class UserGuide extends Model
         return $this->belongsTo(AudioGuide::class);
     }
 
+    public function User(){
+        return $this->belongsTo(User::class);
+    }
+
     protected $fillable = [
         'user_id',
         'payment_type',

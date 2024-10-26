@@ -9,6 +9,10 @@ class ProductOffer extends Model
 {
     use HasFactory;
 
+    public function AudioGuide(){
+        return $this->belongsTo(AudioGuide::class);
+    }
+
     protected $fillable = [
         'offer_type',
         'offer_amount',

@@ -45,8 +45,16 @@ class AudioGuide extends Model
         return $this->belongsTo(Category::class);
     }
 
+    public function AudioHistory(){
+        return $this->hasMany(AudioHistory::class);
+    }
+
     public function UserGuide(){
         return $this->hasMany(UserGuide::class);
+    }
+
+    public function ProductReview(){
+        return $this->hasMany(ProductReview::class);
     }
 
 

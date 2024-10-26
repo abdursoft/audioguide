@@ -243,17 +243,16 @@ class UserController extends Controller
     public function adminAuth(){
         return response()->json([
             'status' => true,
-            'message' => 'Admin authenticated'
+            'message' => 'Authenticated'
         ],200);
     }
 
     public function logOut(Request $request){
-        $request->cookie('token','',-1,'/');
-        $request->headers->set('token' , null);
+        $user = User::find($request->header('id'));
         return response()->json([
             'status' => true,
             'message' => 'Logout successful'
-        ],200);
+        ],200)->cookie($user->role."_token",'',-3600,'/',null,false,true,false,null);
     }
 
     public function webLogOut(Request $request){

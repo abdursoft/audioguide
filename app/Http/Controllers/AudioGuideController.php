@@ -127,6 +127,7 @@ class AudioGuideController extends Controller
                             "title" => $request->input('title') ?? $file_name[0],
                             "status" => $request->input('status'),
                             "price" => $price ?? $request->input('price'),
+                            "short_description" => $request->input('short_description') ?? null,
                             "cover" => Storage::disk('public')->put('guides', $request->file('cover')),
                             "category_id" => $category,
                             "remark" => $request->input('remark') ?? null,
@@ -140,10 +141,9 @@ class AudioGuideController extends Controller
                     AudioContent::create($item);
                 }
                 if ($audio_guide !== null && !empty($request->input('description'))) {
-                    $desc = Helper::descriptionSanitize($request->input('description'));
                     $description = AudioDescription::create([
-                        'files' => $desc['files'],
-                        'description' => $desc['description'],
+                        'files' => null,
+                        'description' => $request->input('description'),
                         'audio_guide_id' => $audio_guide->id,
                     ]);
                     if (!empty($request->input('questions'))) {
@@ -159,7 +159,8 @@ class AudioGuideController extends Controller
                         }
                     }
                     if (!empty($request->input('faqs'))) {
-                        foreach ($request->input('faqs') as $items) {
+                        $faqs = json_decode($request->input('faqs'), true);
+                        foreach ($faqs as $items) {
                             AudioFaq::create([
                                 'question' => $items['question'],
                                 'answer' => $items['answer'],
@@ -196,7 +197,7 @@ class AudioGuideController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Audio guide successfully retrieved',
-            'data' => $audioGuide->load(['Category', 'AudioDescription', 'AudioDescription.AudioFaq', 'UserGuide']),
+            'data' => $audioGuide->load(['Category', 'AudioDescription', 'AudioDescription.AudioFaq', 'UserGuide','AudioContent']),
         ], 200);
     }
 
@@ -214,11 +215,16 @@ class AudioGuideController extends Controller
     public function update(AudioGuide $audioGuide, Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'category' => 'required|unique:categories,name',
-            'title' => 'required',
             'cover' => 'file|mimes:jpeg,jpg,png,webp',
+            'description' => 'required',
+            'title' => "required|exists:audio_guides,title,$audioGuide->id,id",
+            'call_to_action' => 'required',
+            'remark' => 'required',
             'status' => 'required',
+            'theme' => 'required',
             'price' => 'required',
+            'questions' => 'required',
+            'answers' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -234,18 +240,41 @@ class AudioGuideController extends Controller
             if ($request->hasFile('cover')) {
                 $cover = Storage::disk('public')->put('audio-guide', $request->file('cover'));
             }
+            DB::beginTransaction();
             $audioGuide->update([
                 "title" => $request->input('title'),
                 "status" => $request->input('status'),
                 "price" => $request->input('price'),
+                "short_description" => $request->input('short_description') ?? $audioGuide->short_description,
                 "cover" => $cover,
-                "category_id" => $request->input('category'),
+                "category_id" => $audioGuide->category_id,
+                "remark" => $request->input('remark') ?? $audioGuide->remark,
+                "call_to_action" => $request->input('call_to_action'),
+                "theme" => $request->input('theme') ?? $audioGuide->theme,
+                "duration" => $request->input('duration') ?? $audioGuide->duration,
             ]);
+            if (!empty($request->input('description'))) {
+                AudioDescription::where('audio_guide_id',$audioGuide->id)->update([
+                    'files' => null,
+                    'description' => $request->input('description'),
+                ]);
+                if (!empty($request->input('faqs'))) {
+                    $faqs = json_decode($request->input('faqs'), true);
+                    foreach ($faqs as $items) {
+                        AudioFaq::where('id',$items['id'])->update([
+                            'question' => $items['question'],
+                            'answer' => $items['answer'],
+                        ]);
+                    }
+                }
+            }
+            DB::commit();
             return response()->json([
                 'status' => true,
                 'message' => 'Audio guide successfully updated',
             ], 200);
         } catch (\Throwable $th) {
+            DB::rollBack();
             return response()->json([
                 'status' => false,
                 'message' => 'Audio guide couldn\'t update',
@@ -327,11 +356,12 @@ class AudioGuideController extends Controller
         return $filter;
     }
 
-    public function parseAffiliate($url) {}
+    public function parseAffiliate($url)
+    {}
 
     public function getAudioGuide($id)
     {
-        $guide = AudioGuide::with(['Category', 'AudioContent'])->find($id);
+        $guide = AudioGuide::with(['Category', 'AudioContent','AudioDescription','AudioDescription.AudioFaq','UserGuide'])->find($id);
         return response()->json([
             'status' => true,
             'data' => $guide,

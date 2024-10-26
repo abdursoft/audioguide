@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Payment;
 
 use App\Http\Controllers\Controller;
+use App\Models\UserSubscription;
 use Illuminate\Http\Request;
 
 class StripeController extends Controller
@@ -77,7 +78,7 @@ class StripeController extends Controller
         $this->pay->products->delete($product, []);
     }
 
-    public function subscriptionCreate(string $customer_id, array $items){
+    public function subscriptionCreate(string $customer_id, string|array $items,array $data){
         return $this->pay->subscriptions->create([
             'customer' => $customer_id,
             'items' => [$items],
@@ -85,6 +86,17 @@ class StripeController extends Controller
             'payment_settings' => ['save_default_payment_method' => 'on_subscription'], 
             'expand' => ['latest_invoice.payment_intent'], 
           ]);
+    }
+
+    public function subscriptionCancel(string $subscription_id){
+        return $this->pay->subscriptions->cancel($subscription_id, []);
+    }
+
+    public function subscriptionResume(string $subscription_id){
+        return $this->pay->subscriptions->resume(
+            $subscription_id,
+            ['billing_cycle_anchor' => 'now']
+          );
     }
 
 
@@ -159,5 +171,44 @@ class StripeController extends Controller
             'transfer_group' => 'payout_from_'.env('SITE_NAME'),
         ]);
         return $payout;
+    }
+
+
+    public function subscriptionEvents(Request $request){
+        $endpoint_secret = env('STRIPE_END_POINT');
+    
+        $payload = @file_get_contents('php://input');
+        $sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
+        $event = null;
+        
+        $event = \Stripe\Webhook::constructEvent(
+            $payload, $sig_header, $endpoint_secret
+          );
+        
+        switch ($event->type) {
+          case 'customer.subscription.created':
+            $subscription = $event->data->object;
+          case 'customer.subscription.deleted':
+            $subscription = $event->data->object;
+            UserSubscription::where('stripe_subscription_id',$subscription->id)->delete();
+          case 'customer.subscription.paused':
+            $subscription = $event->data->object;
+            UserSubscription::where('stripe_subscription_id',$subscription->id)->update([
+                'status' => 'paused'
+            ]);
+          case 'customer.subscription.resumed':
+            $subscription = $event->data->object;
+            UserSubscription::where('stripe_subscription_id',$subscription->id)->update([
+                'status' => 'active'
+            ]);
+          case 'customer.subscription.updated':
+            $subscription = $event->data->object;
+            UserSubscription::where('stripe_subscription_id',$subscription->id)->update([
+                'status' => 'active'
+            ]);
+          default:
+            true;
+        }
+        http_response_code(200);
     }
 }

@@ -4,6 +4,7 @@ use App\Http\Controllers\AudioContentController;
 use App\Http\Controllers\AudioDescriptionController;
 use App\Http\Controllers\AudioFaqController;
 use App\Http\Controllers\AudioGuideController;
+use App\Http\Controllers\AudioHistoryController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PasswordController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\ProductCartController;
 use App\Http\Controllers\ProductCouponController;
 use App\Http\Controllers\ProductOfferController;
 use App\Http\Controllers\ProductWishController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SubscriptionController;
@@ -40,9 +42,16 @@ Route::prefix('v1/users')->group(function(){
 
 
     Route::middleware([UserAuthentication::class])->group(function(){
+        Route::get('auth', [UserController::class, 'adminAuth']);
+        Route::get('signout', [UserController::class, 'logOut']);
         // guide cart section start 
         Route::apiResource('cart', ProductCartController::class);
+        Route::delete('cart/delete/{id}',[ ProductCartController::class, 'delete']);
         Route::apiResource('wishlist', ProductWishController::class);
+        Route::apiResource('audio-history', AudioHistoryController::class);
+        Route::post('/complete/audio-history', [AudioHistoryController::class, 'complete']);
+        Route::post('/continoue/audio-history', [AudioHistoryController::class, 'continoue']);
+        Route::apiResource('profile', ProfileController::class);
         Route::apiResource('invoice', InvoiceController::class);
         // guide wishlist section end
 
@@ -63,6 +72,8 @@ Route::prefix('v1/users')->group(function(){
 
         // user subscription start
         Route::apiResource('/subscription', UserSubscriptionController::class);
+        Route::post('cancel/subscription', [UserSubscriptionController::class, 'cancel']);
+        Route::post('resume/subscription', [UserSubscriptionController::class, 'resume']);
         // user subscription end
     });
 });
@@ -119,6 +130,8 @@ Route::prefix('v1/client')->group(function(){
     Route::get('sections', [ SectionController::class, 'index' ]);
     Route::get('sections/{id}', [ SectionController::class, 'singleSection' ]);
     Route::get('settings/{id}', [ SettingsController::class, 'index' ]);
+    Route::get('audio-guide', [AudioGuideController::class, 'index']);
+    Route::get('audio-guide-by/{id}', [AudioGuideController::class, 'getAudioGuide']);
     Route::get('audio/pagination', [AudioGuideController::class, 'onlyGuide']);
     Route::get('audio/by/content/{id}', [AudioGuideController::class, 'audioByContent']);
     Route::get('audio/contents', [AudioContentController::class, 'index']);
@@ -126,7 +139,6 @@ Route::prefix('v1/client')->group(function(){
     Route::get('subscriptions', [SubscriptionController::class, 'index']);
     Route::get('subscriptions/{id?}', [SubscriptionController::class, 'singleSubScription']);
 });
-
 
 
 // s3 cloudfront domain 

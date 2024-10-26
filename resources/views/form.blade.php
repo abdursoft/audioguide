@@ -34,10 +34,23 @@
         document.getElementById('myForm').addEventListener('submit', (e) => {
             e.preventDefault();
             var myForm = document.getElementById('myForm');
-            axios.post('/api/v1/admin/audio-guide', new FormData(myForm), {
+            const myFormData = new FormData(myForm);
+
+            const faqs = [
+                {
+                    "question":"Hello",
+                    "answer":"gello"
+                },
+                {
+                    "question":"Hello",
+                    "answer":"gello"
+                }
+            ]
+            myFormData.append('faqs',JSON.stringify(faqs));
+            axios.post('/api/v1/admin/audio-guide', myFormData, {
                 withCredentials: true,
                 headers:{
-                    Authorization:"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiIxMjcuMC4wLjEiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3Mjk2OTEzMDMsIm5iZiI6MTcyOTY5MTMxMywiZXhwIjoxNzI5Njk0OTAzLCJpZCI6MSwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20ifQ.ird7Jo8bj-RhS6WSK89sn0yZ7Oqgi3jjCIs8wYUHsOg"
+                    Authorization:"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiIxMjcuMC4wLjEiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3Mjk3MDUyMTQsIm5iZiI6MTcyOTcwNTIyNCwiZXhwIjoxNzI5NzA4ODE0LCJpZCI6MSwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20ifQ.2b49cqYifq3ccmVC6hVhyZd45jrcqT1W8TVsMQEajz4"
                 }
             } )
                 .then(async (response) => {
@@ -50,6 +63,7 @@
                     console.log(error.response.data.message);
                 })
         })
+
 
         let number = 0;
         function addFaq(){

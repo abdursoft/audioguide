@@ -14,8 +14,12 @@ class UserSubscriptionController extends Controller {
     /**
      * Display a listing of the resource.
      */
-    public function index() {
-        //
+    public function index(Request $request) {
+        return response()->json( [
+            'status' => true,
+            'message' => 'User subscriptions retrieved',
+            'data'   => UserSubscription::where('user_id',$request->header('id'))->get(),
+        ], 200 );
     }
 
     /**
@@ -57,14 +61,19 @@ class UserSubscriptionController extends Controller {
 
             $subscription = $stripe->subscriptionCreate( $customer_id, [
                 'price' => $plan->stripe_price,
-            ] );
+            ],[] );
             $price = $stripe->productRetrievePrice($plan->stripe_price);
             UserSubscription::create([
                 'paid_amount' => $price->unit_amount,
                 'currency' => $price->currency,
                 'user_id' => $user->id,
-                'subscription_id' => $subscription->id,
+                'started_at' => date('Y-m-d'),
+                'ended_at' => date('Y-m-d',strtotime("+$plan->duration")),
+                'invoice_url' => $subscription->latest_invoice->invoice_pdf,
+                'subscription_id' => $plan->id,
+                'stripe_subscription_id' => $subscription->id
             ]);
+            DB::commit();
             return response()->json( [
                 'status'      => true,
                 'message'     => 'Invoice successfully created',
@@ -73,11 +82,11 @@ class UserSubscriptionController extends Controller {
             ], 201 );
 
         } catch ( \Throwable $th ) {
+            DB::rollBack();
             return response()->json( [
                 'status'   => false,
                 'message'  => 'Subscription couldn\'t create',
-                'errors'   => $th->getMessage(),
-                'customer' => $customer,
+                'errors'   => $th->getMessage()
             ], 400 );
         }
     }
@@ -85,8 +94,19 @@ class UserSubscriptionController extends Controller {
     /**
      * Display the specified resource.
      */
-    public function show( UserSubscription $userSubscription ) {
-        //
+    public function show(Request $request, UserSubscription $userSubscription ) {
+        if($request->header('id') == $userSubscription->user_id){
+            return response()->json( [
+                'status' => true,
+                'message' => 'User subscriptions retrieved',
+                'data'   => $userSubscription,
+            ], 200 );
+        }else{
+            return response()->json( [
+                'status'   => false,
+                'message'  => 'Unauthorized data fetching...',
+            ], 403 );
+        }
     }
 
     /**
@@ -106,7 +126,50 @@ class UserSubscriptionController extends Controller {
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy( UserSubscription $userSubscription ) {
-        //
+    public function destroy(Request $request, UserSubscription $userSubscription ) {
+        $stripe       = new StripeController();
+        if($userSubscription->user_id == $request->header('id')){
+            $stripe->subscriptionCancel($userSubscription->stripe_subscription_id);
+            return response()->json([
+                'status' => true,
+                'message' => 'Your subscription has been deleted'
+            ]);
+        }
+    }
+
+    public function cancel(Request $request){
+        try {
+            $stripe       = new StripeController();
+            $subscription = UserSubscription::where('stripe_subscription_id',$request->input('subscription_id'))->where('user_id',$request->header('id'))->first();
+            $stripe->subscriptionCancel($subscription->stripe_subscription_id);
+            return response()->json([
+                'status' => true,
+                'message' => 'Your subscription has been canceled'
+            ],200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => true,
+                'message' => 'Your subscription couldn\'t cancel',
+                'errors' => $th->getMessage()
+            ],400);
+        }
+    }
+
+    public function resume(Request $request){
+        try {
+            $stripe       = new StripeController();
+            $subscription = UserSubscription::where('stripe_subscription_id',$request->input('subscription_id'))->where('user_id',$request->header('id'))->first();
+            $stripe->subscriptionResume($subscription->stripe_subscription_id);
+            return response()->json([
+                'status' => true,
+                'message' => 'Your subscription has been resumed'
+            ],200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => true,
+                'message' => 'Your subscription couldn\'t resume',
+                'errors' => $th->getMessage()
+            ],400);
+        }
     }
 }

@@ -9,6 +9,14 @@ class Invoice extends Model
 {
     use HasFactory;
 
+    public function User(){
+        return $this->belongsTo(User::class);
+    }
+
+    public function InvoiceProduct(){
+        return $this->hasMany(InvoiceProduct::class);
+    }
+
     protected $fillable = [
         'vat',
         'total',

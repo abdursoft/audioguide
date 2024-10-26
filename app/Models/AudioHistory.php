@@ -2,13 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ProductReview extends Model
+class AudioHistory extends Model
 {
-    use HasFactory;
-
     public function AudioGuide(){
         return $this->belongsTo(AudioGuide::class);
     }
@@ -18,9 +15,8 @@ class ProductReview extends Model
     }
 
     protected $fillable = [
-        'star',
-        'description',
-        'audio_guide_id',
+        'status',
         'user_id',
+        'audio_guide_id'
     ];
 }

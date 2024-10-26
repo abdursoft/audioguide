@@ -13,7 +13,7 @@ return new class extends Migration {
             $table->id();
             $table->string( 'payment_id', 300 )->nullable();
             $table->double( 'paid_amount' )->default( 0 );
-            $table->string( 'currency', 40 )->default( 'usd' );
+            $table->string( 'currency', 40 )->default( 'eur' );
 
             // make the relation with user table
             $table->unsignedBigInteger( 'user_id' );

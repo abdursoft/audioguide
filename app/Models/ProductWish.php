@@ -13,6 +13,9 @@ class ProductWish extends Model
         return $this->belongsTo(AudioGuide::class);
     }
 
+    public function User(){
+        return $this->belongsTo(User::class);
+    }
 
     protected $fillable = [
         'audio_guide_id',

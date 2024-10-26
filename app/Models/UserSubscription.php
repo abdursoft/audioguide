@@ -9,11 +9,20 @@ class UserSubscription extends Model
 {
     use HasFactory;
 
+    public function Subscription(){
+        return $this->belongsTo(Subscription::class);
+    }
+
     protected $fillable = [
         'payment_id',
         'paid_amount',
         'currency',
         'user_id',
+        'status',
+        'started_at',
+        'ended_at',
+        'invoice_url',
         'subscription_id',
+        'stripe_subscription_id',
     ];
 }
