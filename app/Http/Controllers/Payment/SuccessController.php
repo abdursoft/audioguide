@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Payment;
 
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
+use App\Models\InvoiceProduct;
+use App\Models\UserGuide;
 use Illuminate\Http\Request;
 
 class SuccessController extends Controller
@@ -14,6 +16,7 @@ class SuccessController extends Controller
     public function stripeSuccess(Request $request){
         if ( !empty( $request->query( 'trans' ) ) ) {
             $invoice = Invoice::where( 'trans_id', $request->query( 'trans' ) )->first();
+            $product = InvoiceProduct::where('invoice_id',$invoice->id)->get();
             if ( !empty( $invoice ) ) {
                 $stripe  = new StripeController();
                 $payment = $stripe->paymentRetrieve( $invoice->payment_id );
@@ -21,7 +24,14 @@ class SuccessController extends Controller
                     $invoice->update([
                         'payment_status' => $payment->payment_status
                     ]);
-                    return view('payment_cancel');
+                    foreach($product as $guide){
+                        UserGuide::create([
+                            'payment_type' => 'fixed',
+                            'user_id' => $guide->user_id,
+                            'audio_guide_id' => $guide->audio_guide_id
+                        ]);
+                    }
+                    return view('success');
                 }
             }
         }

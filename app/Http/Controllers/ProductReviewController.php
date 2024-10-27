@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ProductReview;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class ProductReviewController extends Controller
 {
@@ -28,7 +29,44 @@ class ProductReviewController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validate = Validator::make($request->all(),[
+            'description' => 'required|string|max:1000',
+            'guide_id' => 'required|exists:audio_guides,id',
+            'star' => 'required',
+        ]);
+
+        if($validate->fails()){
+            return response()->json([
+                'status' => 'fail',
+                'message' => 'Review coludn\'t save',
+                'errors' => $validate->errors()
+            ],400);
+        }
+
+        try {
+            ProductReview::updateOrCreate(
+                [
+                    'user_id' => $request->header('id'),
+                    'audio_guide_id' => $request->input('product_id')
+                ],
+                [
+                    'description' => $request->input('description'),
+                    'star' => $request->input('star'),
+                    'user_id' => $request->header('id'),
+                    'audio_guide_id' => $request->input('product_id')
+                ]
+            );
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Thanks! for your feedback',
+            ],200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 'fail',
+                'message' => 'Coludn\'t post your review',
+                'errors' => $th->getMessage()
+            ],400);
+        }
     }
 
     /**
@@ -58,8 +96,26 @@ class ProductReviewController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(ProductReview $productReview)
+    public function destroy(Request $request, ProductReview $productReview)
     {
-        //
+        try {
+            if($productReview->user_id == $request->header('id')){
+                $productReview->delete();
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Review successfully removed',
+                ],200);
+            }else{
+                return response()->json([
+                    'status' => 'fail',
+                    'message' => 'Unauthorized action',
+                ],400);
+            }
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 'fail',
+                'message' => 'Review ID or Profile couldn\'t match for the review',
+            ],400);
+        }
     }
 }

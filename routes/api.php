@@ -75,6 +75,9 @@ Route::prefix('v1/users')->group(function(){
         Route::post('cancel/subscription', [UserSubscriptionController::class, 'cancel']);
         Route::post('resume/subscription', [UserSubscriptionController::class, 'resume']);
         // user subscription end
+
+        // special route 
+        Route::get('home-page', [AudioGuideController::class, 'homepage']);
     });
 });
 

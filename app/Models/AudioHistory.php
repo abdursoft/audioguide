@@ -16,6 +16,8 @@ class AudioHistory extends Model
 
     protected $fillable = [
         'status',
+        'score',
+        'lesson',
         'user_id',
         'audio_guide_id'
     ];

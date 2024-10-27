@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('audio_histories', function (Blueprint $table) {
             $table->id();
             $table->enum('status',['finish','start'])->default('start');
+            $table->decimal('score')->default(0);
+            $table->bigInteger('lesson');
 
             // make the relation with user table
             $table->unsignedBigInteger( 'user_id' );

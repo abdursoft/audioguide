@@ -9,6 +9,9 @@ use App\Models\AudioFaq;
 use App\Models\AudioGuide;
 use App\Models\Category;
 use App\Models\InvoiceProduct;
+use App\Models\ProductWish;
+use App\Models\User;
+use App\Models\UserGuide;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -386,5 +389,26 @@ class AudioGuideController extends Controller
             $column = ['*'],
             $pageName = 'page'
         );
+    }
+
+    public function homepage(Request $request){
+        $purchase = UserGuide::where('user_id',$request->header('id'))->pluck('audio_guide_id')->toArray();
+        $wishlist = ProductWish::where('user_id',$request->header('id'))->pluck('audio_guide_id')->toArray();
+
+        $guides = AudioGuide::all()->toArray();
+
+        $products = [];
+
+        foreach($guides as $item){
+            if(in_array($item['id'],$purchase)){
+                $item['purchase'] = true;
+            }
+            if(in_array($item['id'],$wishlist)){
+                $item['wishList'] = true;
+            }
+            $products[] = $item;
+        }
+
+        return response()->json($products);
     }
 }

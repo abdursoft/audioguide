@@ -35,7 +35,8 @@ class AudioHistoryController extends Controller
     {
         $validate = Validator::make($request->all(), [
             'guide_id' => 'required|exists:audio_guides,id',
-            'status' => 'required'
+            'status' => 'required',
+            'lesson' => 'required'
         ]);
 
         if ($validate->fails()) {
@@ -53,6 +54,8 @@ class AudioHistoryController extends Controller
             ], [
                 'status' => $request->input('status'),
                 'user_id' => $request->header('id'),
+                'lesson' => $request->input('lesson'),
+                'score' => $request->input('score') ?? '0',
                 'audio_guide_id' => $request->input('guide_id')
             ]);
 
