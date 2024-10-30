@@ -92,13 +92,33 @@ class ProductWishController extends Controller {
      */
     public function destroy( Request $request, ProductWish $productWish ) {
         try {
-            if ( $productWish->user_id === $request->header( 'id' ) ) {
+            if ( $productWish->user_id == $request->header( 'id' ) ) {
                 $productWish->delete();
                 return response()->json( [
                     'status' => 'success',
                     'message'  => 'Product successfully removed from wishlist',
                 ], 200 );
             }
+        } catch ( \Throwable $th ) {
+            return response()->json( [
+                'status' => 'fail',
+                'message'  => "Unauthorized Access",
+                'errors' => $th->getMessage(),
+            ], 400 );
+        }
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function delete( Request $request, $id ) {
+        try {
+            $productWish = ProductWish::where('user_id',$request->header('id'))->where('audio_guide_id',$id)->first();
+            $productWish->delete();
+            return response()->json( [
+                'status' => 'success',
+                'message'  => 'Product successfully removed from wishlist',
+            ], 200 );
         } catch ( \Throwable $th ) {
             return response()->json( [
                 'status' => 'fail',

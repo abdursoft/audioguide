@@ -103,7 +103,7 @@ class ProfileController extends Controller {
     public function profile(Request $request){
         return response()->json([
             'status' => true,
-            'data' => Profile::find('id',$request->header('id'))
+            'data' => Profile::where('user_id',$request->header('id'))->first()
         ],200);
     }
 }

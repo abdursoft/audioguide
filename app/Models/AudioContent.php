@@ -63,6 +63,7 @@ class AudioContent extends Model {
         "tag_description",
         "status_value",
         "single_price",
+        "total_price",
         "audio_guide_id",
         "created_at",
         "updated_at",

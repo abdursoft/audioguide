@@ -16,11 +16,12 @@ return new class extends Migration
             $table->string('name');
             $table->string('otp',10)->nullable();
             $table->string('email')->unique();
-            $table->enum('role',['user','admin'])->default('user');
+            $table->enum('role',['user','admin','business','sub_business'])->default('user');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('customer_id',300)->nullable();
             $table->string('social_id')->nullable();
+            $table->string('business_id')->nullable();
             $table->string('social_type')->nullable();
             $table->boolean('is_verified')->default(0);
             $table->boolean('is_blocked')->default(0);

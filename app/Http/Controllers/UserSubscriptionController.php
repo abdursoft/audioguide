@@ -64,9 +64,10 @@ class UserSubscriptionController extends Controller {
             ],[] );
             $price = $stripe->productRetrievePrice($plan->stripe_price);
             UserSubscription::create([
-                'paid_amount' => $price->unit_amount,
+                'paid_amount' => $price->unit_amount / 100,
                 'currency' => $price->currency,
                 'user_id' => $user->id,
+                'type' => $plan->duration == null ? 'lifetime' : 'autorenew',
                 'started_at' => date('Y-m-d'),
                 'ended_at' => date('Y-m-d',strtotime("+$plan->duration")),
                 'invoice_url' => $subscription->latest_invoice->invoice_pdf,

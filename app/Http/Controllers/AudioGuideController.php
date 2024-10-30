@@ -10,6 +10,7 @@ use App\Models\AudioGuide;
 use App\Models\Category;
 use App\Models\InvoiceProduct;
 use App\Models\ProductWish;
+use App\Models\Update;
 use App\Models\User;
 use App\Models\UserGuide;
 use Illuminate\Http\Request;
@@ -59,8 +60,7 @@ class AudioGuideController extends Controller
                 'status' => 'required',
                 'theme' => 'required',
                 'price' => 'required',
-                'questions' => 'required',
-                'answers' => 'required',
+                'faqs' => 'required',
             ]);
         }
 
@@ -108,9 +108,10 @@ class AudioGuideController extends Controller
                 DB::beginTransaction();
                 $audio_guide = null;
                 $price = null;
+                $free = false;
                 foreach ($sheetData as $key => $item) {
                     if ($key === 0) {
-                        $price = $item->single_price ?? null;
+                        $price = $item->total_price ?? null;
                         $category = 1;
                         if (!empty($item->categoria)) {
                             $new_category = str_replace(' ', '_', strtolower($$item->categoria));
@@ -125,6 +126,10 @@ class AudioGuideController extends Controller
                                     'name' => $category,
                                 ]);
                             }
+                        }
+
+                        if(!empty($item->free) && !$free){
+                            $free = $item->file_mp3;
                         }
                         $audio_guide = AudioGuide::create([
                             "title" => $request->input('title') ?? $file_name[0],
@@ -171,6 +176,18 @@ class AudioGuideController extends Controller
                             ]);
                         }
                     }
+                }
+                if($free !== false && $audio_guide !== null){
+                    AudioGuide::where('id',$audio_guide->id)->update([
+                        'theme' => $free
+                    ]);
+                }
+                if($audio_guide !== null){
+                    Update::create([
+                        'image' => Storage::disk('public')->put('guides', $request->file('cover')),
+                        'title' => $request->input('title'),
+                        'sub_title' => $request->input('short_description')
+                    ]);
                 }
                 DB::commit();
                 return response()->json([
@@ -226,8 +243,7 @@ class AudioGuideController extends Controller
             'status' => 'required',
             'theme' => 'required',
             'price' => 'required',
-            'questions' => 'required',
-            'answers' => 'required',
+            'faqs' => 'required',
         ]);
 
         if ($validator->fails()) {

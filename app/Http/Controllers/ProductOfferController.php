@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\AudioGuide;
 use App\Models\ProductOffer;
+use App\Models\Update;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class ProductOfferController extends Controller {
@@ -46,6 +48,7 @@ class ProductOfferController extends Controller {
         }
 
         try {
+            DB::beginTransaction();
             $audio = AudioGuide::find( $request->input( 'audio_guide_id' ) );
             if ( $request->input( 'offer_type' ) === 'percent' ) {
                 $price = $audio->price - ($audio->price * $request->input( 'offer_amount' ) / 100);
@@ -68,11 +71,19 @@ class ProductOfferController extends Controller {
                 'audio_guide_id' => $request->input('audio_guide_id'),
             ] );
 
+            Update::create([
+                'image' => $audio->cover.", only for $price",
+                'title' => $audio->title,
+                'sub_title' => $audio->short_description
+            ]);
+            DB::commit();
+
             return response()->json([
                 'status' => true,
                 'message' => 'Audio offer successfully saved'
             ],200);
         } catch ( \Throwable $th ) {
+            DB::rollBack();
             return response()->json([
                 'status' => false,
                 'message' => 'Audio offer couldn\'t save',

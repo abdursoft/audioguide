@@ -22,7 +22,11 @@ class User extends Authenticatable
         'otp',
         'social_id',
         'customer_id',
-        'social_type'
+        'social_type',
+        'image',
+        'skill',
+        'point',
+        'completed'
     ];
 
     /**

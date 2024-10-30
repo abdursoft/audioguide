@@ -22,6 +22,9 @@ class UserSubscription extends Model
         'started_at',
         'ended_at',
         'invoice_url',
+        'guide_type',
+        'guide_id',
+        'type',
         'subscription_id',
         'stripe_subscription_id',
     ];

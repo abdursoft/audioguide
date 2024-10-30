@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminBusiness;
 use App\Http\Controllers\AudioContentController;
 use App\Http\Controllers\AudioDescriptionController;
 use App\Http\Controllers\AudioFaqController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\UpdateController;
 use App\Http\Controllers\UserBillingController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserShippingController;
@@ -44,14 +46,17 @@ Route::prefix('v1/users')->group(function(){
     Route::middleware([UserAuthentication::class])->group(function(){
         Route::get('auth', [UserController::class, 'adminAuth']);
         Route::get('signout', [UserController::class, 'logOut']);
+
         // guide cart section start 
         Route::apiResource('cart', ProductCartController::class);
         Route::delete('cart/delete/{id}',[ ProductCartController::class, 'delete']);
         Route::apiResource('wishlist', ProductWishController::class);
+        Route::delete('wishlist/delete/{id}', [ProductWishController::class, 'delete']);
         Route::apiResource('audio-history', AudioHistoryController::class);
         Route::post('/complete/audio-history', [AudioHistoryController::class, 'complete']);
         Route::post('/continoue/audio-history', [AudioHistoryController::class, 'continoue']);
         Route::apiResource('profile', ProfileController::class);
+        Route::get('get-profile', [ProfileController::class,'profile']);
         Route::apiResource('invoice', InvoiceController::class);
         // guide wishlist section end
 
@@ -78,6 +83,9 @@ Route::prefix('v1/users')->group(function(){
 
         // special route 
         Route::get('home-page', [AudioGuideController::class, 'homepage']);
+        Route::post('profile-update', [UserController::class, 'update']);
+        Route::get('profile-data', [UserController::class, 'profileData']);
+        Route::post('delete', [UserController::class, 'delete']);
     });
 });
 
@@ -88,6 +96,7 @@ Route::prefix('v1/admin')->group(function(){
 
     Route::middleware([AdminAuth::class])->group(function(){
         Route::get('auth', [UserController::class, 'adminAuth']);
+        Route::get('signout', [UserController::class, 'logOut']);
 
         Route::apiResource('category', CategoryController::class);
         // category section end
@@ -113,6 +122,21 @@ Route::prefix('v1/admin')->group(function(){
         // subscription section start 
         Route::apiResource('subscription', SubscriptionController::class);
         // subscription section end
+
+        // front section start 
+        Route::post('front-section', [ProductCouponController::class, 'store']);
+        Route::get('front-section/{id?}', [ProductCouponController::class, 'show']);
+        Route::put('front-section/{id}', [ProductCouponController::class, 'update']);
+        Route::delete('front-section/{id}', [ProductCouponController::class, 'destroy']);
+        // front section end
+
+        // business users start
+        Route::post('business/create',[AdminBusiness::class,'create']);
+        Route::post('business/delete/{id}',[AdminBusiness::class,'delete']);
+
+        // statistics
+        Route::get('statistic/subscription/{id?}', [AdminBusiness::class, 'subscriptions']);
+        Route::get('revenue', [AdminBusiness::class, 'revenue']);
     });
 
 });
@@ -141,6 +165,9 @@ Route::prefix('v1/client')->group(function(){
     Route::get('audio/contents/{id}', [AudioContentController::class, 'singleContent']);
     Route::get('subscriptions', [SubscriptionController::class, 'index']);
     Route::get('subscriptions/{id?}', [SubscriptionController::class, 'singleSubScription']);
+    // update routes
+    Route::get('updates/{id?}', [UpdateController::class,'show']);
+    Route::get('front-section/{id?}', [ProductCouponController::class, 'show']);
 });
 
 

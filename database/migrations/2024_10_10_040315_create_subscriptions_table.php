@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('description',500);
             $table->double('price');
             $table->string('currency',30);
-            $table->string('duration',200);
+            $table->string('duration',200)->nullable();
             $table->enum('status', ['active','inactive']);
 
             $table->timestamp('created_at')->useCurrent();
