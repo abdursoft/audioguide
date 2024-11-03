@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('materia',300)->nullable();
             $table->string('argomento',300)->nullable();
             $table->string('capitolo',300)->nullable();
-            $table->string('titolo',300)->nullable();
+            $table->longText('titolo')->nullable();
             $table->string('short_description',300)->nullable();
             $table->longText('descrizione')->nullable();
             $table->string('file_mp3',300)->nullable();
@@ -63,9 +63,9 @@ return new class extends Migration
             $table->string('tag_description',300)->nullable();
             $table->string('status_value',300)->nullable();
             $table->string('single_price',300)->nullable();
-            $table->enum('is_free',['1','0'])->default('0');
+            $table->string('free',20)->nullable();
 
-            // make the relation with audio_guide table 
+            // make the relation with audio_guide table
             $table->unsignedBigInteger('audio_guide_id');
             $table->foreign('audio_guide_id')->references('id')->on('audio_guides')->cascadeOnUpdate()->restrictOnDelete();
 

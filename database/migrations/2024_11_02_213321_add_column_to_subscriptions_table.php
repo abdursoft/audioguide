@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('user_subscriptions', function (Blueprint $table) {
-            $table->after('invoice_url',function($table){
-                $table->enum('guide_type',['single','all'])->default('single');
+        Schema::table('subscriptions', function (Blueprint $table) {
+            $table->after('status',function($table){
+                $table->enum('type',['onetime','lifetime','autorenew'])->default('autorenew');
             });
         });
     }
@@ -23,7 +23,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('user_subscriptions', function (Blueprint $table) {
+        Schema::table('subscriptions', function (Blueprint $table) {
             //
         });
     }

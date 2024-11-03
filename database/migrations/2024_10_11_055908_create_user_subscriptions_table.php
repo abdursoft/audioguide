@@ -14,14 +14,11 @@ return new class extends Migration {
             $table->string( 'payment_id', 300 )->nullable();
             $table->double( 'paid_amount' )->default( 0 );
             $table->string( 'currency', 40 )->default( 'eur' );
+            $table->string( 'guide_id', 40 );
 
             // make the relation with user table
             $table->unsignedBigInteger( 'user_id' );
             $table->foreign( 'user_id' )->references( 'id' )->on( 'users' )->cascadeOnUpdate()->restrictOnDelete();
-
-            // make the relation with user table
-            $table->unsignedBigInteger( 'subscription_id' );
-            $table->foreign( 'subscription_id' )->references( 'id' )->on( 'subscriptions' )->cascadeOnUpdate()->restrictOnDelete();
 
             $table->timestamp( 'created_at' )->useCurrent();
             $table->timestamp( 'updated_at' )->useCurrent()->useCurrentOnUpdate();

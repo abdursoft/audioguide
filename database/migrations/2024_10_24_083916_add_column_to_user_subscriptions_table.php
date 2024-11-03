@@ -16,8 +16,8 @@ return new class extends Migration
                 $table->string( 'status', 40 )->default( 'pending' );
                 $table->date( 'started_at');
                 $table->date( 'ended_at');
-                $table->string('invoice_url',400);
-                $table->string('stripe_subscription_id',400);
+                $table->string('invoice_url',400)->nullable();
+                $table->string('stripe_subscription_id',400)->nullable();
             });
         });
     }

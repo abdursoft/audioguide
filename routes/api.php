@@ -35,11 +35,12 @@ Route::get('/user', function (Request $request) {
 
 
 
-// user api routes 
+// user api routes
 Route::prefix('v1/users')->group(function(){
     Route::post('signup', [UserController::class, 'store']);
     Route::post('signup-otp-verify', [UserController::class, 'verifySignupOTP']);
     Route::post('signin', [UserController::class, 'login']);
+    Route::post('otp-resend', [UserController::class, 'otpResend']);
 
 
 
@@ -47,7 +48,7 @@ Route::prefix('v1/users')->group(function(){
         Route::get('auth', [UserController::class, 'adminAuth']);
         Route::get('signout', [UserController::class, 'logOut']);
 
-        // guide cart section start 
+        // guide cart section start
         Route::apiResource('cart', ProductCartController::class);
         Route::delete('cart/delete/{id}',[ ProductCartController::class, 'delete']);
         Route::apiResource('wishlist', ProductWishController::class);
@@ -56,19 +57,20 @@ Route::prefix('v1/users')->group(function(){
         Route::post('/complete/audio-history', [AudioHistoryController::class, 'complete']);
         Route::post('/continoue/audio-history', [AudioHistoryController::class, 'continoue']);
         Route::apiResource('profile', ProfileController::class);
+        Route::post('profile-image', [UserController::class, 'profileImage']);
         Route::get('get-profile', [ProfileController::class,'profile']);
         Route::apiResource('invoice', InvoiceController::class);
         // guide wishlist section end
 
-        // billing start 
+        // billing start
         Route::get('/billing', [UserBillingController::class, 'show']);
         Route::post('/billing/add', [UserBillingController::class, 'store']);
         Route::post('/billing/edit', [UserBillingController::class, 'store']);
         Route::delete('/billing/delete', [UserBillingController::class, 'destroy']);
-        // billing end        
+        // billing end
 
 
-        // shipping start 
+        // shipping start
         Route::get('/shipping', [UserShippingController::class, 'show']);
         Route::post('/shipping/add', [UserShippingController::class, 'store']);
         Route::post('/shipping/edit', [UserShippingController::class, 'store']);
@@ -81,7 +83,7 @@ Route::prefix('v1/users')->group(function(){
         Route::post('resume/subscription', [UserSubscriptionController::class, 'resume']);
         // user subscription end
 
-        // special route 
+        // special route
         Route::get('home-page', [AudioGuideController::class, 'homepage']);
         Route::post('profile-update', [UserController::class, 'update']);
         Route::get('profile-data', [UserController::class, 'profileData']);
@@ -90,7 +92,7 @@ Route::prefix('v1/users')->group(function(){
 });
 
 
-// admin api routes 
+// admin api routes
 Route::prefix('v1/admin')->group(function(){
     Route::post('signin', [UserController::class, 'login']);
 
@@ -104,9 +106,9 @@ Route::prefix('v1/admin')->group(function(){
         Route::apiResource('section', SectionController::class);
         Route::apiResource('settings', SettingsController::class);
 
-        // audio guide section start 
+        // audio guide section start
         Route::apiResource('audio-guide', AudioGuideController::class);
-        // audio guide section end 
+        // audio guide section end
         Route::apiResource('audio-content', AudioContentController::class);
         Route::apiResource('audio-description',AudioDescriptionController::class);
         Route::apiResource('audio-faq',AudioFaqController::class);
@@ -119,11 +121,11 @@ Route::prefix('v1/admin')->group(function(){
         Route::delete('coupon/{id}', [ProductCouponController::class, 'destroy']);
         // coupon section end
 
-        // subscription section start 
+        // subscription section start
         Route::apiResource('subscription', SubscriptionController::class);
         // subscription section end
 
-        // front section start 
+        // front section start
         Route::post('front-section', [ProductCouponController::class, 'store']);
         Route::get('front-section/{id?}', [ProductCouponController::class, 'show']);
         Route::put('front-section/{id}', [ProductCouponController::class, 'update']);
@@ -136,6 +138,7 @@ Route::prefix('v1/admin')->group(function(){
 
         // statistics
         Route::get('statistic/subscription/{id?}', [AdminBusiness::class, 'subscriptions']);
+        Route::post('subscription-status', [SubscriptionController::class, 'deactiveSubscription']);
         Route::get('revenue', [AdminBusiness::class, 'revenue']);
     });
 
@@ -143,7 +146,7 @@ Route::prefix('v1/admin')->group(function(){
 
 
 
-// password controller 
+// password controller
 Route::prefix('v1/password')->group(function(){
     Route::post('send-otp', [PasswordController::class, 'sendOTP']);
     Route::post('verify-otp', [PasswordController::class, 'verifyOTP']);
@@ -171,5 +174,5 @@ Route::prefix('v1/client')->group(function(){
 });
 
 
-// s3 cloudfront domain 
+// s3 cloudfront domain
 // https://d281ygvypsdjur.cloudfront.net

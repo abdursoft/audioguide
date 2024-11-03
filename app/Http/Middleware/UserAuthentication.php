@@ -17,7 +17,10 @@ class UserAuthentication
     public function handle(Request $request, Closure $next): Response
     {
         if(empty($request->header('Authorization')) || !$request->header('Authorization') || $request->header('Authorization') == ''){
-            $token = JWTAuth::verifyToken($request->cookie('user_token'),false);
+            return response()->json([
+                'status' => false,
+                'message' => 'Please provide your authorization token in the request header',
+            ],401);
         }else{
             $token = JWTAuth::verifyToken($request->header('Authorization'),false);
         }

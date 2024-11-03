@@ -50,7 +50,7 @@ class PasswordController extends Controller
                     'status' => 'success',
                     'message' => 'OTP has been successfully sent',
                     'token' => $otpToken
-                ])->cookie('password_otp',$otpToken,time()+3600,'/',null,false,true,false,null);
+                ]);
             } catch (\Throwable $th) {
                 return response()->json([
                     'status' => 'fail',
@@ -71,22 +71,20 @@ class PasswordController extends Controller
     public function verifyOTP(Request $request){
         if(!empty($request->input('otp'))){
             try {
-                $token = JWTAuth::verifyToken('password_otp');
+                $token = JWTAuth::verifyToken($request->input('otp_token'),false);
                 $passToken = JWTAuth::createToken('password_token',.5,null,$token->email);
                 $user = User::where('email',$token->email)->first();
-
                 if( $request->input('otp') == $user->otp){
                     User::where('id', $user->id)->update(['otp' => '']);
-                    setcookie('password_otp','',time()-3600,'/');
                     return response()->json([
                         'status' => 'success',
                         'message' => 'OTP match, Go for next',
-                    ],200)->cookie('password_token',$passToken,time()+3600,'/',null,false,true,false,null);
+                        "password_token" => $passToken
+                    ],200);
                 }else{
                     return response()->json([
                         'status' => 'fail',
                         'message' => 'Invalid OTP',
-                        'user' => $user
                     ],400); 
                 }
             } catch (\Throwable $th) {
@@ -112,22 +110,28 @@ class PasswordController extends Controller
         $con = $request->input('confirm_password');
 
         if($new == $con){
-            try {
-                $token = JWTAuth::verifyToken('password_token');
-                $user = User::where('email',$token->email)->first();
-                $user->update([
-                    'password' => password_hash($new,PASSWORD_DEFAULT)
-                ]);
-                setcookie('password_token','',time()-3600,'/');
-                return response()->json([
-                    'status' => 'success',
-                    'message' => "Password successfully reset"
-                ],200);
-            } catch (\Throwable $th) {
+            if(strlen($new) < 5){
                 return response()->json([
                     'status' => 'fail',
-                    'message' => 'Authorization or Server Error!'
+                    'message' => 'Password length must be 5 or more characters'
                 ],400);
+            }else{
+                try {
+                    $token = JWTAuth::verifyToken($request->input('password_token'),false);
+                    $user = User::where('email',$token->email)->first();
+                    $user->update([
+                        'password' => password_hash($new,PASSWORD_DEFAULT)
+                    ]);
+                    return response()->json([
+                        'status' => 'success',
+                        'message' => "Password successfully reset"
+                    ],200);
+                } catch (\Throwable $th) {
+                    return response()->json([
+                        'status' => 'fail',
+                        'message' => 'Authorization or Server Error!'
+                    ],400);
+                }
             }
         }else{
             return response()->json([

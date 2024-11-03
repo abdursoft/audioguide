@@ -60,7 +60,7 @@ class AudioGuideController extends Controller
                 'status' => 'required',
                 'theme' => 'required',
                 'price' => 'required',
-                'faqs' => 'required',
+                // 'faqs' => 'required',
             ]);
         }
 
@@ -108,8 +108,10 @@ class AudioGuideController extends Controller
                 DB::beginTransaction();
                 $audio_guide = null;
                 $price = null;
-                $free = false;
+                $free = null;
                 foreach ($sheetData as $key => $item) {
+                    $data = $item;
+                    $item = (object) $item;
                     if ($key === 0) {
                         $price = $item->total_price ?? null;
                         $category = 1;
@@ -128,9 +130,6 @@ class AudioGuideController extends Controller
                             }
                         }
 
-                        if(!empty($item->free) && !$free){
-                            $free = $item->file_mp3;
-                        }
                         $audio_guide = AudioGuide::create([
                             "title" => $request->input('title') ?? $file_name[0],
                             "status" => $request->input('status'),
@@ -145,8 +144,11 @@ class AudioGuideController extends Controller
                             "lessons" => count($sheetData),
                         ]);
                     }
-                    $item['audio_guide_id'] = $audio_guide->id;
-                    AudioContent::create($item);
+                    if(!empty($item->free) && $free === null){
+                        $free = $item->file_mp3;
+                    }
+                    $data['audio_guide_id'] = $audio_guide->id;
+                    AudioContent::create($data);
                 }
                 if ($audio_guide !== null && !empty($request->input('description'))) {
                     $description = AudioDescription::create([
@@ -186,9 +188,11 @@ class AudioGuideController extends Controller
                     Update::create([
                         'image' => Storage::disk('public')->put('guides', $request->file('cover')),
                         'title' => $request->input('title'),
-                        'sub_title' => $request->input('short_description')
+                        'sub_title' => $request->input('short_description'),
+                        'reference_id' => $audio_guide->id
                     ]);
                 }
+
                 DB::commit();
                 return response()->json([
                     'status' => true,

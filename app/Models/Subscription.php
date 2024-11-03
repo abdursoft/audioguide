@@ -21,6 +21,7 @@ class Subscription extends Model
         'price',
         'currency',
         'duration',
-        'status'
+        'status',
+        'type',
     ];
 }

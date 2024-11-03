@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Payment\StripeController;
 use App\Models\Subscription;
+use App\Models\Update;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Stripe\Stripe;
 
 class SubscriptionController extends Controller
 {
@@ -18,7 +21,7 @@ class SubscriptionController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Subscription plan successfully retrieved',
-            'data' => Subscription::all()
+            'data' => Subscription::orderBy('id','desc')->get()
         ],200);
     }
 
@@ -56,13 +59,24 @@ class SubscriptionController extends Controller
             DB::beginTransaction();
             $stripe = new StripeController();
             $product = $stripe->productCreate($request->input('title'),$request->input('description'),$request->input('price'));
-            $price = $stripe->productPrice($product->id,$request->input('price'),$request->input('currency'));
+            $price = null;
+            if($request->input('duration') != '0'){
+                $price = $stripe->productPrice($product->id,$request->input('price'),$request->input('currency'));
+            }
             $data = array_merge($validator->validate(),[
                 'stripe_id' => $product->id,
-                'stripe_price' => $price->id
+                'stripe_price' => $price->id ?? $request->input('price'),
+                'type' => $price ? 'autorenew' : 'lifetime'
             ]);
 
-            Subscription::create($data);
+            $subscription = Subscription::create($data);
+            Update::create([
+                'image' => $request->hasFile('image') ? Storage::disk('public')->put('guides', $request->file('cover')) : null,
+                'title' => $request->input('title'),
+                'sub_title' => $request->input('description'),
+                'reference_id' => $subscription->id,
+                'type' => 'offer'
+            ]);
             DB::commit();
             return response()->json([
                 'status' => true,
@@ -153,7 +167,28 @@ class SubscriptionController extends Controller
                 'errors'=> $th->getMessage()
             ],400);
         }
-        
+
+    }
+
+    /**
+     * Deactive subscription
+     */
+    public function deactiveSubscription(Request $request){
+        try {
+            $plan = Subscription::find($request->input('plan_id'));
+            Subscription::where('id',$request->input('plan_id'))->update([
+                'status' => $plan->status == 'inactive' ? 'active' : 'inactive'
+            ]);
+            return response()->json([
+                'status' => true,
+                'message' => 'Subscription plan\'s status changed'
+            ],200);
+        } catch (\Throwable $th) {
+           return response()->json([
+                'status' => false,
+                'message' => 'Subscription plan\'s status couldn\'t change'
+            ],400);
+        }
     }
 
 

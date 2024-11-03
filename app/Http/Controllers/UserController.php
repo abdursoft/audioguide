@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Auth\JWTAuth;
 use App\Mail\LoginOTP;
+use App\Models\AudioGuide;
 use App\Models\AudioHistory;
 use App\Models\Invoice;
 use App\Models\InvoiceProduct;
@@ -58,7 +59,7 @@ class UserController extends Controller
     {
         $validator = Validator::make($request->all(), [
             "name" => "required|string",
-            "email" => "required|email|unique:users,email",
+            "email" => "required|email",
             "password" => "required|string|min:6"
         ]);
 
@@ -68,6 +69,29 @@ class UserController extends Controller
                 'message' => 'User registration failed',
                 'errors' => $validator->errors()
             ], 400);
+        }
+
+        $exists = User::where('email',$request->input('email'))->first();
+        if($exists && !$exists->is_verified){
+            $token = rand(1000, 9999);
+            $user = User::where('email',$exists->email)->update(
+                [
+                    "otp" => $token,
+                ]
+            );
+            Mail::to($request->input('email'))->send(new LoginOTP($token, "Use the OTP to verify your account"));
+            return response()->json([
+                'status' => false,
+                'message' => 'A verification code has been sent to your email',
+                'is_verified' => false
+            ], 400)->cookie('otp_email', $request->input('email'), time() + 3600, '/', null, false, true, false, null);
+        }elseif($exists && $exists->is_verified){
+            return response()->json([
+                'status' => false,
+                'message' => 'This email already exist, Please login',
+            ], 200);
+        }else{
+            true;
         }
 
         try {
@@ -140,6 +164,39 @@ class UserController extends Controller
     }
 
     /**
+     * Profile image upload
+     */
+    public function profileImage(Request $request){
+        if($request->hasFile('image')){
+            try {
+                $user = User::find($request->header('id'));
+                User::where('id', $request->header('id'))->update([
+                    'image' => Storage::disk('public')->put("uploads/profile", $request->file('image')) ?? $user->image
+                ]);
+                if(!empty($user->image)){
+                    Storage::disk('public')->delete($user->image);
+                }
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Profile image successfully updated'
+                ], 200);
+            } catch (\Throwable $th) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Profile image couldn\'t update',
+                    'errors' => $th->getMessage()
+                ], 400);
+            }
+        }else{
+            return response()->json([
+                'status' => false,
+                'message' => 'Please provide an image with a post request',
+            ], 400);
+        }
+
+    }
+
+    /**
      * Remove the specified resource from storage.
      */
     public function destroy(Request $request)
@@ -169,14 +226,14 @@ class UserController extends Controller
         }
     }
 
-    /** 
+    /**
      * Verifying signup otp
      */
     public function verifySignupOTP(Request $request)
     {
-        // return $request->cookie('otp_email');
+        $email = $request->cookie('otp_email') ?? $request->input('email');
         try {
-            $user = User::where('email', $request->cookie('otp_email'))->first();
+            $user = User::where('email', $email)->first();
             if ($request->input() != '' && $user->otp == $request->input('otp')) {
                 User::where('id', $user->id)->update([
                     'otp' => '',
@@ -249,7 +306,7 @@ class UserController extends Controller
                         'message' => 'Your account has been blocked'
                     ], 400);
                 } else {
-                    $token = JWTAuth::createToken($user->role, 1, $user->id, $user->email);
+                    $token = JWTAuth::createToken($user->role, 8740, $user->id, $user->email);
                     return response()->json([
                         'status' => true,
                         'message' => 'Login successful',
@@ -337,10 +394,27 @@ class UserController extends Controller
     public function profileData(Request $request)
     {
         try {
-            $user = User::with('Profile', 'ProductCart', 'ProductCart.AudioGuide', 'ProductWish', 'ProductWish.AudioGuide', 'UserGuide', 'UserGuide.AudioGuide', 'UserSubscription','UserSubscription.Subscription')->find($request->header('id'));
+            $user = User::with('Profile', 'ProductCart', 'ProductCart.AudioGuide', 'ProductWish', 'ProductWish.AudioGuide', 'UserSubscription')->find($request->header('id'));
+            $billing = UserSubscription::where('user_id',$request->header('id'))->get();
+            $guides = [];
+            $yearly = $onetime = $lifetime = false;
+            foreach($billing as $bill){
+                if($bill->type === 'onetime'){
+                    $onetime = true;
+                    $guides[] = AudioGuide::find($bill->guide_id);
+                }elseif($bill->type === 'autorenew'){
+                    $yearly = true;
+                }else{
+                   $lifetime = true;
+                }
+            }
             return response()->json([
                 'status' => true,
-                'data' => $user
+                'data' => $user,
+                'guides' => $guides,
+                'yearly' => $yearly,
+                'onetime' => $onetime,
+                'lifetime' => $lifetime
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([
