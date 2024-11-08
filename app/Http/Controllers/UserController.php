@@ -71,26 +71,28 @@ class UserController extends Controller
             ], 400);
         }
 
-        $exists = User::where('email',$request->input('email'))->first();
-        if($exists && !$exists->is_verified){
+        $exists = User::where('email', $request->input('email'))->first();
+        if ($exists && !$exists->is_verified) {
             $token = rand(1000, 9999);
-            $user = User::where('email',$exists->email)->update(
+            $user = User::where('email', $exists->email)->update(
                 [
                     "otp" => $token,
                 ]
             );
             Mail::to($request->input('email'))->send(new LoginOTP($token, "Use the OTP to verify your account"));
+            $token = JWTAuth::createToken('otp_email', .5, null, $request->input('email'));
             return response()->json([
                 'status' => false,
                 'message' => 'A verification code has been sent to your email',
-                'is_verified' => false
-            ], 400)->cookie('otp_email', $request->input('email'), time() + 3600, '/', null, false, true, false, null);
-        }elseif($exists && $exists->is_verified){
+                'is_verified' => false,
+                'otp_email' => $token
+            ], 400);
+        } elseif ($exists && $exists->is_verified) {
             return response()->json([
                 'status' => false,
                 'message' => 'This email already exist, Please login',
             ], 200);
-        }else{
+        } else {
             true;
         }
 
@@ -106,11 +108,12 @@ class UserController extends Controller
                 ]
             );
             Mail::to($request->input('email'))->send(new LoginOTP($token, "Use the OTP to verify your account"));
-
+            $token = JWTAuth::createToken('otp_email', .5, null, $request->input('email'));
             DB::commit();
             return response([
                 'status' => true,
                 'message' => 'A verification Code has been sent to your email',
+                'otp_email' => $token
             ], 201)->cookie('otp_email', $request->input('email'), time() + 3600, '/', null, false, true, false, null);
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -166,14 +169,15 @@ class UserController extends Controller
     /**
      * Profile image upload
      */
-    public function profileImage(Request $request){
-        if($request->hasFile('image')){
+    public function profileImage(Request $request)
+    {
+        if ($request->hasFile('image')) {
             try {
                 $user = User::find($request->header('id'));
                 User::where('id', $request->header('id'))->update([
                     'image' => Storage::disk('public')->put("uploads/profile", $request->file('image')) ?? $user->image
                 ]);
-                if(!empty($user->image)){
+                if (!empty($user->image)) {
                     Storage::disk('public')->delete($user->image);
                 }
                 return response()->json([
@@ -187,13 +191,12 @@ class UserController extends Controller
                     'errors' => $th->getMessage()
                 ], 400);
             }
-        }else{
+        } else {
             return response()->json([
                 'status' => false,
                 'message' => 'Please provide an image with a post request',
             ], 400);
         }
-
     }
 
     /**
@@ -231,9 +234,9 @@ class UserController extends Controller
      */
     public function verifySignupOTP(Request $request)
     {
-        $email = $request->cookie('otp_email') ?? $request->input('email');
+        $token = JWTAuth::verifyToken($request->input('otp_email'), false);
         try {
-            $user = User::where('email', $email)->first();
+            $user = User::where('email', $token->email)->first();
             if ($request->input() != '' && $user->otp == $request->input('otp')) {
                 User::where('id', $user->id)->update([
                     'otp' => '',
@@ -245,7 +248,7 @@ class UserController extends Controller
                         'message' => "Account successfully verified",
                     ],
                     200
-                )->cookie('otp_email', '', -40, '/');
+                );
             } else {
                 return response()->json(
                     [
@@ -394,33 +397,134 @@ class UserController extends Controller
     public function profileData(Request $request)
     {
         try {
-            $user = User::with('Profile', 'ProductCart', 'ProductCart.AudioGuide', 'ProductWish', 'ProductWish.AudioGuide', 'UserSubscription')->find($request->header('id'));
-            $billing = UserSubscription::where('user_id',$request->header('id'))->get();
+            $user = User::with('Profile', 'ProductCart', 'ProductCart.AudioGuide', 'ProductWish', 'ProductWish.AudioGuide','UserSubscription')->find($request->header('id'));
+            $billing = UserSubscription::where('user_id', $request->header('id'))->get();
             $guides = [];
             $yearly = $onetime = $lifetime = false;
-            foreach($billing as $bill){
-                if($bill->type === 'onetime'){
+            $active_plan = "Free membership";
+            $active_start = "";
+            $active_end = '';
+            foreach ($billing as $bill) {
+                if ($bill->type === 'onetime') {
                     $onetime = true;
                     $guides[] = AudioGuide::find($bill->guide_id);
-                }elseif($bill->type === 'autorenew'){
+                    if($bill->status === 'paid' || $bill->status === 'complete' || $bill->status === 'active'){
+                        $active_plan = "Single guide subscription";
+                    }
+                }if ($bill->type === 'autorenew') {
                     $yearly = true;
-                }else{
-                   $lifetime = true;
+                    if($bill->status === 'paid' || $bill->status === 'complete' || $bill->status === 'active'){
+                        $active_plan = "Yearly subscription";
+                    }
+                } else {
+                    $lifetime = true;
+                    if($bill->status === 'paid' || $bill->status === 'complete' || $bill->status === 'active'){
+                        $active_plan = "Lifetime subscription";
+                    }
                 }
+                $active_start = $bill->started_at;
+                $active_end = $bill->ended_at;
             }
             return response()->json([
                 'status' => true,
                 'data' => $user,
                 'guides' => $guides,
-                'yearly' => $yearly,
-                'onetime' => $onetime,
-                'lifetime' => $lifetime
+                'active_plan' => [
+                    "name" => $active_plan,
+                    "start" => $active_start,
+                    "end" => $active_end
+                ]
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
                 'message' => $th->getMessage()
             ], 400);
+        }
+    }
+
+
+    /**
+     * User subscription type
+     */
+    public function subscriptionStatus($id){
+        $billing = UserSubscription::where('user_id', $id)->where('ended_at','>',date('Y-m-d'))->get();
+        $status = null;
+        foreach ($billing as $bill) {
+            if ($bill->type === 'onetime') {
+                if($bill->status === 'paid' || $bill->status === 'complete' || $bill->status === 'active'){
+                    $status = $bill->type;
+                }
+            }if ($bill->type === 'autorenew') {
+                if($bill->status === 'paid' || $bill->status === 'complete' || $bill->status === 'active'){
+                    $status = $bill->type;
+                }
+            } else {
+                if($bill->status === 'paid' || $bill->status === 'complete' || $bill->status === 'active'){
+                    $status = $bill->type;
+                }
+            }
+        }
+        return $status;
+    }
+
+    /**
+     * Get user list
+     */
+    public function getUsers(Request $request)
+    {
+        try {
+            return response()->json([
+                'status' => true,
+                'message' => 'User list successfully retrieved',
+                'data' => User::where('role', '!=', 'admin')->get()
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage()
+            ], 400);
+        }
+    }
+
+    /**
+     * Export users
+     */
+    public function export(Request $request)
+    {
+        try {
+            $token = JWTAuth::verifyToken($request->query('token'),false);
+            $admin = User::find($token->id);
+            if($admin->role == 'admin'){
+                header('Content-Type: text/csv');
+                header('Content-Disposition: attachment; filename="user_export_list_'.date('Y-m-d H:i:s').'_.csv"');
+                header('Pragma: no-cache');
+                header('Expires: 0');
+
+                $fp = fopen('php://output', 'w');
+                $result = User::where('role','!=','admin')->select('name','email')->get()->toArray();
+                if (!$result) die("Couldn't fetch records");
+                $headers = array_keys($result[0]);
+
+                if ($fp && $result) {
+                    fputcsv($fp, $headers);
+                    foreach($result as $item){
+                        fputcsv($fp,$item);
+                    }
+                }
+                fclose($fp);
+                exit;
+            }else{
+                return response()->json([
+                    'status' => false,
+                    'Unauthorized access'
+                ],400);
+            }
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'Unauthorized access or Invalid token'
+            ],400);
         }
     }
 }

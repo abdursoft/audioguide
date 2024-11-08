@@ -83,4 +83,12 @@ class User extends Authenticatable
     public function ProductWish(){
         return $this->hasMany(ProductWish::class);
     }
+
+    public function Invoice(){
+        return $this->hasMany(Invoice::class);
+    }
+
+    public function PurchaseMail(){
+        return $this->hasOne(PurchaseMail::class);
+    }
 }

@@ -119,6 +119,24 @@ class InvoiceController extends Controller {
     }
 
     /**
+     * Get invoices by users
+     */
+    public function getInvoices(){
+        try {
+            return response()->json([
+                'status' => true,
+                'message' => "Invoice successfully retrieved",
+                'data' => Invoice::with('users')->orderBy('id','desc')->get()
+            ],200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage()
+            ],400);
+        }
+    }
+
+    /**
      * Show the form for editing the specified resource.
      */
     public function edit( Invoice $invoice ) {

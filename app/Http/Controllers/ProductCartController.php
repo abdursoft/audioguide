@@ -54,7 +54,7 @@ class ProductCartController extends Controller {
                     'audio_guide_id' => $request->input( ['guide_id'] ),
                     'quantity'       => $quantity,
                     'discount'       => $discount,
-                    'price'          => $price,
+                    'price'          => number_format($price,2),
                 ]
 
             );

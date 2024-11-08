@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Helper\Helper;
+use App\Http\Controllers\Auth\JWTAuth;
+use App\Mail\AudioUpload;
 use App\Models\AudioContent;
 use App\Models\AudioDescription;
 use App\Models\AudioFaq;
@@ -13,8 +14,10 @@ use App\Models\ProductWish;
 use App\Models\Update;
 use App\Models\User;
 use App\Models\UserGuide;
+use App\Models\UserSubscription;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
@@ -54,13 +57,13 @@ class AudioGuideController extends Controller
                 'file' => 'required|file',
                 'cover' => 'required|file|mimes:jpeg,jpg,png,webp',
                 'description' => 'required',
+                'short_description' => 'required',
                 'title' => 'required|unique:audio_guides,title',
                 'call_to_action' => 'required',
                 'remark' => 'required',
                 'status' => 'required',
-                'theme' => 'required',
                 'price' => 'required',
-                // 'faqs' => 'required',
+                'faqs' => 'required',
             ]);
         }
 
@@ -102,31 +105,32 @@ class AudioGuideController extends Controller
             for ($i = 1; $i < count($data); $i++) {
                 $sheetData[] = $this->combineData($data[$i], $keys);
             }
-            // return response()->json($sheetData);
+            return response()->json($sheetData);
 
             try {
                 DB::beginTransaction();
                 $audio_guide = null;
                 $price = null;
                 $free = null;
-                foreach ($sheetData as $key => $item) {
-                    $data = $item;
-                    $item = (object) $item;
+                $cat_id = 1;
+                foreach ($sheetData as $key => $items) {
+                    $data = $items;
+                    $item = (object) $items;
                     if ($key === 0) {
                         $price = $item->total_price ?? null;
-                        $category = 1;
                         if (!empty($item->categoria)) {
-                            $new_category = str_replace(' ', '_', strtolower($$item->categoria));
+                            $new_category = str_replace(' ', '_', strtolower($item->categoria));
                             $new_category = str_replace('/', '_', $new_category);
                             $exist = Category::where('category', $new_category)->first();
 
                             if ($exist) {
-                                return $exist->id;
+                                $cat_id = $exist->id;
                             } else {
                                 $category = Category::create([
                                     'category' => strtolower($new_category),
-                                    'name' => $category,
+                                    'name' => $item->categoria,
                                 ]);
+                                $cat_id = $category->id;
                             }
                         }
 
@@ -136,7 +140,7 @@ class AudioGuideController extends Controller
                             "price" => $price ?? $request->input('price'),
                             "short_description" => $request->input('short_description') ?? null,
                             "cover" => Storage::disk('public')->put('guides', $request->file('cover')),
-                            "category_id" => $category,
+                            "category_id" => $cat_id,
                             "remark" => $request->input('remark') ?? null,
                             "call_to_action" => $request->input('call_to_action'),
                             "theme" => $request->input('theme') ?? null,
@@ -145,29 +149,18 @@ class AudioGuideController extends Controller
                         ]);
                     }
                     if(!empty($item->free) && $free === null){
-                        $free = $item->file_mp3;
+                        $free = $item->free;
                     }
                     $data['audio_guide_id'] = $audio_guide->id;
                     AudioContent::create($data);
                 }
+                return $free;
                 if ($audio_guide !== null && !empty($request->input('description'))) {
                     $description = AudioDescription::create([
                         'files' => null,
                         'description' => $request->input('description'),
                         'audio_guide_id' => $audio_guide->id,
                     ]);
-                    if (!empty($request->input('questions'))) {
-                        $questions = $request->input('questions');
-                        $answers = $request->input('answers');
-
-                        foreach ($questions as $key => $question) {
-                            AudioFaq::create([
-                                'question' => $question,
-                                'answer' => $answers[$key],
-                                'audio_description_id' => $description->id,
-                            ]);
-                        }
-                    }
                     if (!empty($request->input('faqs'))) {
                         $faqs = json_decode($request->input('faqs'), true);
                         foreach ($faqs as $items) {
@@ -179,7 +172,7 @@ class AudioGuideController extends Controller
                         }
                     }
                 }
-                if($free !== false && $audio_guide !== null){
+                if($free !== null && $audio_guide !== null){
                     AudioGuide::where('id',$audio_guide->id)->update([
                         'theme' => $free
                     ]);
@@ -194,6 +187,12 @@ class AudioGuideController extends Controller
                 }
 
                 DB::commit();
+
+                $users = User::where('role', '!=','admin')->get();
+                foreach($users as $user){
+                    Mail::to($user->email)->send(new AudioUpload($request->title,$request->short_description,$price ?? $request->price));
+                }
+
                 return response()->json([
                     'status' => true,
                     'message' => 'Audio guide successfully created',
@@ -208,7 +207,7 @@ class AudioGuideController extends Controller
         } else {
             return response()->json([
                 'status' => false,
-                'message' => "Please select a CSV | XLSX file",
+                'message' => "Please select a CSV file",
             ], 400);
         }
     }
@@ -314,14 +313,14 @@ class AudioGuideController extends Controller
         try {
             $invoice = InvoiceProduct::where('audio_guide_id', $audioGuide->id)->count();
             if ($invoice === 0) {
-                if (!empty($audioGuide->cover)) {
-                    Storage::disk('public')->delete($audioGuide->cover);
-                }
                 $description = AudioDescription::where('audio_guide_id', $audioGuide->id)->first();
                 AudioFaq::where('audio_description_id', $description->id)->delete();
                 AudioDescription::where('audio_guide_id', $audioGuide->id)->delete();
                 AudioContent::where('audio_guide_id', $audioGuide->id)->delete();
-                $audioGuide->delete();
+                $delete = $audioGuide->delete();
+                if (!empty($audioGuide->cover) && $delete == '1') {
+                    Storage::disk('public')->delete($audioGuide->cover);
+                }
                 return response()->json([
                     'status' => true,
                     'message' => 'Audio guide successfully removed',
@@ -335,7 +334,7 @@ class AudioGuideController extends Controller
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
-                'message' => 'Audio guide couldn\'t remove',
+                'message' => 'Audio guide couldn\'t remove, maybe its related with a user cartlist, wishlist or some one already purchased',
                 'errors' => $th->getMessage(),
             ], 400);
         }
@@ -382,9 +381,33 @@ class AudioGuideController extends Controller
     public function parseAffiliate($url)
     {}
 
-    public function getAudioGuide($id)
+    public function getAudioGuide(Request $request, $id)
     {
         $guide = AudioGuide::with(['Category', 'AudioContent','AudioDescription','AudioDescription.AudioFaq','UserGuide'])->find($id);
+
+        if($request->header('Authorization')){
+            $token = JWTAuth::verifyToken($request->header('Authorization'),false);
+            if($token){
+                $exist = UserSubscription::where('user_id',$token->id)->where('guide_id',$id)->where('ended_at', '>', date('Y-m-d'))->orderBy('id','desc')->first();
+                $status = (new UserController)->subscriptionStatus($token->id);
+                $wishlist = ProductWish::where('user_id',$token->id)->where('audio_guide_id',$id)->count();
+
+                if(!empty($exist) && ($exist->status === 'paid' || $exist->status === 'complete' || $exist->status === 'active')){
+                    $guide['purchase'] = true;
+                    $guide['whishlist'] = $wishlist > 0 ? true : false;
+                }else{
+                    $guide['purchase'] = $status !== null ? true : false;
+                    $guide['whishlist'] = $wishlist > 0 ? true : false;
+                }
+            }else{
+                $guide['purchase'] = false;
+                $guide['whishlist'] = false;
+            }
+        }else{
+            $guide['purchase'] = false;
+            $guide['whishlist'] = false;
+        }
+
         return response()->json([
             'status' => true,
             'data' => $guide,
@@ -412,20 +435,32 @@ class AudioGuideController extends Controller
     }
 
     public function homepage(Request $request){
-        $purchase = UserGuide::where('user_id',$request->header('id'))->pluck('audio_guide_id')->toArray();
+
+        $purchase = UserSubscription::where('user_id',$request->header('id'))->where('ended_at', '>', date('Y-m-d'))->pluck('guide_id')->toArray();
         $wishlist = ProductWish::where('user_id',$request->header('id'))->pluck('audio_guide_id')->toArray();
 
         $guides = AudioGuide::all()->toArray();
 
         $products = [];
+        $token = null;
+        $status = null;
+        if($request->header('Authorization')){
+            $token = JWTAuth::verifyToken($request->header('Authorization'),false);
+            $status = (new UserController)->subscriptionStatus($token->id);
+        }
 
         foreach($guides as $item){
             if(in_array($item['id'],$purchase)){
                 $item['purchase'] = true;
+            }else{
+                if($status === 'autorenew' || $status === 'lifetime'){
+                    $item['purchase'] = true;
+                }
             }
             if(in_array($item['id'],$wishlist)){
                 $item['wishList'] = true;
             }
+
             $products[] = $item;
         }
 

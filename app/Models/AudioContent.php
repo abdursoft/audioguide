@@ -66,6 +66,7 @@ class AudioContent extends Model {
         "total_price",
         "audio_guide_id",
         "created_at",
+        "free",
         "updated_at",
     ];
 

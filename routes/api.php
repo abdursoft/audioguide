@@ -7,6 +7,7 @@ use App\Http\Controllers\AudioFaqController;
 use App\Http\Controllers\AudioGuideController;
 use App\Http\Controllers\AudioHistoryController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ContactMessageController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PasswordController;
 use App\Http\Controllers\ProductCartController;
@@ -25,6 +26,7 @@ use App\Http\Controllers\UserSubscriptionController;
 use App\Http\Middleware\AdminAuth;
 use App\Http\Middleware\UserAuthentication;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/user', function (Request $request) {
@@ -136,10 +138,25 @@ Route::prefix('v1/admin')->group(function(){
         Route::post('business/create',[AdminBusiness::class,'create']);
         Route::post('business/delete/{id}',[AdminBusiness::class,'delete']);
 
+        // user sections
+        Route::get('get-users', [UserController::class, 'getUsers']);
+        Route::get('export-users', [UserController::class, 'export']);
+
+        // subscription and invoices
+        Route::get('get-invoices', [InvoiceController::class, "getInvoices"]);
+        Route::get('get-subscriptions', [UserSubscriptionController::class, "getSubscriptions"]);
+
         // statistics
         Route::get('statistic/subscription/{id?}', [AdminBusiness::class, 'subscriptions']);
         Route::post('subscription-status', [SubscriptionController::class, 'deactiveSubscription']);
         Route::get('revenue', [AdminBusiness::class, 'revenue']);
+
+        // contact message
+        Route::get('get-message', [ContactMessageController::class,'getMessage']);
+        Route::get('sent-message', [ContactMessageController::class,'sentMessage']);
+        Route::post('contact-message', [ContactMessageController::class,'messageReplay']);
+        Route::get('contact-message/{id}', [ContactMessageController::class,'seenMessage']);
+        Route::delete('contact-message/{id}', [ContactMessageController::class,'destroy']);
     });
 
 });
@@ -171,6 +188,20 @@ Route::prefix('v1/client')->group(function(){
     // update routes
     Route::get('updates/{id?}', [UpdateController::class,'show']);
     Route::get('front-section/{id?}', [ProductCouponController::class, 'show']);
+
+    Route::post('contact-message', [ContactMessageController::class, 'store']);
+});
+
+Route::get('place',function(){
+    try {
+        $response = Http::get("https://maps.googleapis.com/maps/api/place/details/json",[
+            "place_id" => 'ChIJ2UTR78WLJRMRMtcoc4a9L3A',
+            "key" => 'AIzaSyDmAAWvQiskyEyPNLG9yIvlU7VkEZm17cM'
+        ])->throw()->json();
+        return $response;
+    } catch (\Throwable $th) {
+        return $th->getMessage();
+    }
 });
 
 

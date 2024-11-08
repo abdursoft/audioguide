@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Invoice;
 use App\Models\InvoiceProduct;
 use App\Models\ProductCart;
+use App\Models\PurchaseMail;
 use App\Models\Subscription;
 use App\Models\UserGuide;
 use App\Models\UserSubscription;
@@ -54,8 +55,14 @@ class SuccessController extends Controller
                             ]);
                         }
                         ProductCart::where('user_id', $invoice->user_id)->delete();
+                        PurchaseMail::updateOrCreate([
+                            'user_id' => $request->header('id')
+                        ],[
+                            'user_id' => $request->header('id'),
+                            'mail' => 0
+                        ]);
                         DB::commit();
-                        return redirect()->away('http://localhost:5173/user/cart?status=success');
+                        return redirect()->away(env('FRONT_END').'user/cart?status=success');
                     } catch (\Throwable $th) {
                         DB::rollBack();
                         return response()->json([

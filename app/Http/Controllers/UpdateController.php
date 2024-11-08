@@ -36,8 +36,8 @@ class UpdateController extends Controller
      */
     public function show(Request $request, $id=null)
     {
-        if($id !== null){
-            $update = Update::all();
+        if($id === null){
+            $update = Update::get();
         }else{
             $update = Update::find($id);
         }

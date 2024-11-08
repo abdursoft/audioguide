@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Auth\JWTAuth;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
 
 class FacebookController extends Controller
@@ -22,8 +21,7 @@ class FacebookController extends Controller
             $findUser = User::where('facebook_id', $user->id)->first();
 
             if ($findUser) {
-                Auth::login($findUser);
-                return redirect()->intended('dashboard');
+                $token = JWTAuth::createToken('user_token',8740,$findUser->id,$findUser->email);
             } else {
                 $newUser = User::create([
                     'name' => $user->name,
@@ -33,11 +31,11 @@ class FacebookController extends Controller
                     'password' => encrypt('my-facebook')
                 ]);
 
-                $token = JWTAuth::createToken('user',1,$user->id,$user->email);
-                return redirect('/auth/success')->cookie('user_token',$token,3600,'/');
+                $token = JWTAuth::createToken('user_token',8740,$newUser->id,$user->email);
+                return redirect()->away(env('FRONT_END').'auth?token='.$token);
             }
         } catch (\Exception $e) {
-            dd($e->getMessage());
+            return redirect()->away(env('FRONT_END'));
         }
     }
 }

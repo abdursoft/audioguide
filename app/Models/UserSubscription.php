@@ -9,6 +9,9 @@ class UserSubscription extends Model
 {
     use HasFactory;
 
+    public function User(){
+        return $this->belongsTo(User::class);
+    }
     public function Subscription(){
         return $this->belongsTo(Subscription::class);
     }

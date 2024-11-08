@@ -30,5 +30,6 @@ class Invoice extends Model
         'delivery_status',
         'payment_status',
         'user_id',
+        'type'
     ];
 }

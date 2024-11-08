@@ -2,50 +2,45 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Auth\JWTAuth;
 use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Laravel\Socialite\Facades\Socialite;
 
 class AppleController extends Controller
 {
     public function redirectToProvider()
-  {
-    Log::info("apple");
-    return Socialite::driver('apple')->redirect();
-  }
-
-public function handleProviderCallback()
-{
-    try {
-        $user = Socialite::driver('apple')->user();
-    } catch (\Exception $e) {
-        return redirect()->route('login')->with('error', 'Failed to log in with Apple.');
+    {
+        Log::info("apple");
+        return Socialite::driver('apple')->redirect();
     }
 
-    $provider_id = $user->getId();
-    $email = $user->getEmail() ?? 'no-email-provided';
+    public function handleProviderCallback()
+    {
+        try {
+            $user = Socialite::driver('apple')->user();
 
-    $existingUser = User::where('social_id', $provider_id)->orWhere('email', $email)->first();
+            $provider_id = $user->getId();
+            $email = $user->getEmail() ?? 'no-email-provided';
 
-    if ($existingUser) {
-        Auth::login($existingUser);
-    } else {
-        $newUser = User::create([
-            'name' => $user->getName() ?? 'Apple User',
-            'email' => $email,
-            'social_id' => $provider_id,
-            'social_type' => 'apple',
-            'password' => bcrypt('my-apple')
-        ]);
+            $existingUser = User::where('social_id', $provider_id)->orWhere('email', $email)->first();
 
-        Auth::login($newUser);
+            if ($existingUser) {
+                $token = JWTAuth::createToken('user_token', 8740, $existingUser->id, $existingUser->email);
+            } else {
+                $newUser = User::create([
+                    'name' => $user->getName() ?? 'Apple User',
+                    'email' => $email,
+                    'social_id' => $provider_id,
+                    'social_type' => 'apple',
+                    'password' => bcrypt('my-apple'),
+                ]);
+
+                $token = JWTAuth::createToken('user_token', 8740, $newUser->id, $email);
+            }
+            return redirect()->away(env('FRONT_END').'auth?token=' . $token);
+        } catch (\Exception $e) {
+            return redirect()->away(env('FRONT_END'));
+        }
     }
-
-    // If it's a mobile app, generate and redirect with a token
-    $token = Auth::guard('user-api')->user();
-
-    return $token;
- }
 }

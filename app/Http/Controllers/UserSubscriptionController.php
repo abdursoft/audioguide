@@ -172,6 +172,24 @@ class UserSubscriptionController extends Controller
     }
 
     /**
+     * Get all subscription users
+     */
+    public function getSubscriptions(){
+        try {
+            return response()->json([
+                'status' => true,
+                'message' => "User subscription successfully retrieved",
+                'data' => UserSubscription::with('users')->orderBy('id','desc')->get()
+            ],200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage()
+            ],400);
+        }
+    }
+
+    /**
      * Remove the specified resource from storage.
      */
     public function destroy(Request $request, UserSubscription $userSubscription)
