@@ -17,6 +17,7 @@ return new class extends Migration
                 $table->decimal('skill')->default(0);
                 $table->decimal('point')->default(0);
                 $table->decimal('completed')->default(0);
+                $table->enum('demo',['0','1'])->default('0');
             });
         });
     }

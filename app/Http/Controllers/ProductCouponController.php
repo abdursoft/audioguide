@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Helper\Helper;
+use App\Models\Invoice;
+use App\Models\ProductCart;
 use App\Models\ProductCoupon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -216,6 +219,47 @@ class ProductCouponController extends Controller {
                 'status'  => 'fail',
                 'message' => 'Coupon code is required',
             ], 400 );
+        }
+    }
+
+    /**
+     * Apply coupon code
+     */
+    public function couponApply(Request $request){
+        $total = ProductCart::where( 'user_id', $request->header( 'id' ) )->sum( 'price' );
+
+        if(!empty($request->input('coupon_code'))){
+            $coupon = ProductCoupon::where('coupon', $request->input('coupon_code'))->first();
+            $invoice = Invoice::where('user_id',$request->header('id'))->where('coupon_code',$request->input('coupon_code'))->count();
+            if(!empty($coupon)){
+                if($invoice > 1){
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Coupon code limit is over'
+                    ],400);
+                }else{
+                    $sub_total = Helper::couponPrice($coupon,$invoice,$total);
+                    if($total > $sub_total ){
+                        return response()->json([
+                            'status' => true,
+                            'total' => $total,
+                            'sub_total' => $sub_total,
+                            'discount' => $total - $sub_total,
+                            'message' => "Coupon Code $request->coupon_code applied"
+                        ],200);
+                    }else{
+                        return response()->json([
+                            'status' => false,
+                            'message' => 'Invalid coupon or expired'
+                        ],400);
+                    }
+                }
+            }else{
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Invalid coupon code'
+                ],400);
+            }
         }
     }
 }

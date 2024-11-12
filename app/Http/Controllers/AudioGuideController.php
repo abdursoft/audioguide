@@ -10,6 +10,7 @@ use App\Models\AudioFaq;
 use App\Models\AudioGuide;
 use App\Models\Category;
 use App\Models\InvoiceProduct;
+use App\Models\ProductReview;
 use App\Models\ProductWish;
 use App\Models\Update;
 use App\Models\User;
@@ -388,11 +389,63 @@ class AudioGuideController extends Controller
         if($request->header('Authorization')){
             $token = JWTAuth::verifyToken($request->header('Authorization'),false);
             if($token){
+                $user = User::find($token->id);
                 $exist = UserSubscription::where('user_id',$token->id)->where('guide_id',$id)->where('ended_at', '>', date('Y-m-d'))->orderBy('id','desc')->first();
                 $status = (new UserController)->subscriptionStatus($token->id);
                 $wishlist = ProductWish::where('user_id',$token->id)->where('audio_guide_id',$id)->count();
+                $review = ProductReview::where('user_id',$token->id)->where('audio_guide_id',$id)->count();
 
                 if(!empty($exist) && ($exist->status === 'paid' || $exist->status === 'complete' || $exist->status === 'active')){
+                    $guide['purchase'] = true;
+                    $guide['whishlist'] = $wishlist > 0 ? true : false;
+                    $guide['review'] = $review > 0 ? true : false;
+                }elseif($user->demo == '1'){
+                    $guide['purchase'] = true;
+                    $guide['whishlist'] = $wishlist > 0 ? true : false;
+                    $guide['review'] = $review > 0 ? true : false;
+                }else{
+                    $guide['purchase'] = $status !== null ? true : false;
+                    $guide['whishlist'] = $wishlist > 0 ? true : false;
+                    $guide['review'] = $review > 0 ? true : false;
+                }
+            }else{
+                $guide['purchase'] = false;
+                $guide['whishlist'] = false;
+                $guide['review'] = false;
+            }
+        }else{
+            $guide['purchase'] = false;
+            $guide['whishlist'] = false;
+            $guide['review'] = false;
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => $guide,
+        ], 200);
+    }
+
+    // guide searching
+    public function guideSearch(Request $request){
+        $guides = AudioGuide::where('title','LIKE',"%$request->search%")->get()->toArray();
+
+        $token = null;
+        $user = null;
+        if($request->header('Authorization')){
+            $token = JWTAuth::verifyToken($request->header('Authorization'),false);
+            $user = User::find($token->id);
+        }
+        $search = [];
+        foreach($guides as $guide){
+            if($token){
+                $exist = UserSubscription::where('user_id',$token->id)->where('guide_id',$guide['id'])->where('ended_at', '>', date('Y-m-d'))->orderBy('id','desc')->first();
+                $status = (new UserController)->subscriptionStatus($token->id);
+                $wishlist = ProductWish::where('user_id',$token->id)->where('audio_guide_id',$guide['id'])->count();
+
+                if(!empty($exist) && ($exist->status === 'paid' || $exist->status === 'complete' || $exist->status === 'active')){
+                    $guide['purchase'] = true;
+                    $guide['whishlist'] = $wishlist > 0 ? true : false;
+                }elseif($user->demo == '1'){
                     $guide['purchase'] = true;
                     $guide['whishlist'] = $wishlist > 0 ? true : false;
                 }else{
@@ -403,14 +456,12 @@ class AudioGuideController extends Controller
                 $guide['purchase'] = false;
                 $guide['whishlist'] = false;
             }
-        }else{
-            $guide['purchase'] = false;
-            $guide['whishlist'] = false;
+            $search[] = $guide;
         }
 
         return response()->json([
             'status' => true,
-            'data' => $guide,
+            'data' => $search,
         ], 200);
     }
 
@@ -444,13 +495,17 @@ class AudioGuideController extends Controller
         $products = [];
         $token = null;
         $status = null;
+        $user = null;
         if($request->header('Authorization')){
             $token = JWTAuth::verifyToken($request->header('Authorization'),false);
             $status = (new UserController)->subscriptionStatus($token->id);
+            $user = User::find($token->id);
         }
 
         foreach($guides as $item){
             if(in_array($item['id'],$purchase)){
+                $item['purchase'] = true;
+            }elseif($user->demo == '1'){
                 $item['purchase'] = true;
             }else{
                 if($status === 'autorenew' || $status === 'lifetime'){

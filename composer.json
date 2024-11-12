@@ -8,6 +8,7 @@
         "php": "^8.2",
         "alireaza/laravel-form-data": "^1.5",
         "firebase/php-jwt": "^6.10",
+        "jenssegers/agent": "^2.6",
         "laravel/framework": "^11.9",
         "laravel/sanctum": "^4.0",
         "laravel/socialite": "^5.16",

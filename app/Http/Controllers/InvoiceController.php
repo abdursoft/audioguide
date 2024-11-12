@@ -46,7 +46,7 @@ class InvoiceController extends Controller {
             if(!empty($request->input('coupon_code'))){
                 $coupon = ProductCoupon::where('coupon', $request->input('coupon_code'))->first();
 
-                $invoice = Invoice::where('user_id',$request->header('id'))->where('coupon',$request->input('coupon_code'))->count();
+                $invoice = Invoice::where('user_id',$request->header('id'))->where('coupon_code',$request->input('coupon_code'))->count();
 
                 $total = Helper::couponPrice($coupon,$invoice,$total);
             }

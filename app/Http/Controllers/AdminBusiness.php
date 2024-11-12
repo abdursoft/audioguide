@@ -11,11 +11,11 @@ use Illuminate\Support\Facades\Validator;
 class AdminBusiness extends Controller
 {
     /**
-     * Create business user 
+     * Create business user
      */
     public function create(Request $request){
         $validator = Validator::make($request->all(),[
-            'email' => 'required|uniquie:users,email',
+            'email' => 'required|unique:users,email',
             'password' => 'min:8|max:20|alphanumberic',
             'name' => 'required'
         ]);
@@ -93,6 +93,6 @@ class AdminBusiness extends Controller
      */
     public function revenue(){
         $invoice = Invoice::where('payment_status','paid')->orWhere('payment_status','completed')->sum('total');
-        // $subscription = 
+        // $subscription =
     }
 }

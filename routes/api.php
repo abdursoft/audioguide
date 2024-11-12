@@ -8,11 +8,13 @@ use App\Http\Controllers\AudioGuideController;
 use App\Http\Controllers\AudioHistoryController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ContactMessageController;
+use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PasswordController;
 use App\Http\Controllers\ProductCartController;
 use App\Http\Controllers\ProductCouponController;
 use App\Http\Controllers\ProductOfferController;
+use App\Http\Controllers\ProductReviewController;
 use App\Http\Controllers\ProductWishController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SectionController;
@@ -24,6 +26,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserShippingController;
 use App\Http\Controllers\UserSubscriptionController;
 use App\Http\Middleware\AdminAuth;
+use App\Http\Middleware\AppControll;
 use App\Http\Middleware\UserAuthentication;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -64,6 +67,9 @@ Route::prefix('v1/users')->group(function(){
         Route::apiResource('invoice', InvoiceController::class);
         // guide wishlist section end
 
+        // coupon code
+        Route::post('coupon-code', [ProductCouponController::class, 'couponApply']);
+
         // billing start
         Route::get('/billing', [UserBillingController::class, 'show']);
         Route::post('/billing/add', [UserBillingController::class, 'store']);
@@ -84,6 +90,10 @@ Route::prefix('v1/users')->group(function(){
         Route::post('cancel/subscription', [UserSubscriptionController::class, 'cancel']);
         Route::post('resume/subscription', [UserSubscriptionController::class, 'resume']);
         // user subscription end
+
+        // product review start
+        Route::post('product-review', [ProductReviewController::class, 'store']);
+        // product review end
 
         // special route
         Route::get('home-page', [AudioGuideController::class, 'homepage']);
@@ -157,6 +167,9 @@ Route::prefix('v1/admin')->group(function(){
         Route::post('contact-message', [ContactMessageController::class,'messageReplay']);
         Route::get('contact-message/{id}', [ContactMessageController::class,'seenMessage']);
         Route::delete('contact-message/{id}', [ContactMessageController::class,'destroy']);
+
+        // get visitor
+        Route::get('visitor', [DeviceController::class, 'report']);
     });
 
 });
@@ -172,6 +185,7 @@ Route::prefix('v1/password')->group(function(){
 
 // client controller
 Route::prefix('v1/client')->group(function(){
+    Route::get('device', [DeviceController::class, 'device']);
     Route::get('category', [ CategoryController::class, 'index' ]);
     Route::get('category/{category}/audio', [ CategoryController::class, 'categoryByGuide' ]);
     Route::get('sections', [ SectionController::class, 'index' ]);
@@ -190,20 +204,10 @@ Route::prefix('v1/client')->group(function(){
     Route::get('front-section/{id?}', [ProductCouponController::class, 'show']);
 
     Route::post('contact-message', [ContactMessageController::class, 'store']);
-});
 
-Route::get('place',function(){
-    try {
-        $response = Http::get("https://maps.googleapis.com/maps/api/place/details/json",[
-            "place_id" => 'ChIJ2UTR78WLJRMRMtcoc4a9L3A',
-            "key" => 'AIzaSyDmAAWvQiskyEyPNLG9yIvlU7VkEZm17cM'
-        ])->throw()->json();
-        return $response;
-    } catch (\Throwable $th) {
-        return $th->getMessage();
-    }
+    // searching system
+    Route::post('search', [AudioGuideController::class, 'guideSearch']);
 });
-
 
 // s3 cloudfront domain
 // https://d281ygvypsdjur.cloudfront.net

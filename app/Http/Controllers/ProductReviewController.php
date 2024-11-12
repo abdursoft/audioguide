@@ -47,13 +47,13 @@ class ProductReviewController extends Controller
             ProductReview::updateOrCreate(
                 [
                     'user_id' => $request->header('id'),
-                    'audio_guide_id' => $request->input('product_id')
+                    'audio_guide_id' => $request->input('guide_id')
                 ],
                 [
                     'description' => $request->input('description'),
                     'star' => $request->input('star'),
                     'user_id' => $request->header('id'),
-                    'audio_guide_id' => $request->input('product_id')
+                    'audio_guide_id' => $request->input('guide_id')
                 ]
             );
             return response()->json([
