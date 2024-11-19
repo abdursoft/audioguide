@@ -63,7 +63,6 @@ class AudioGuideController extends Controller
                 'call_to_action' => 'required',
                 'remark' => 'required',
                 'status' => 'required',
-                'price' => 'required',
                 'faqs' => 'required',
             ]);
         }
@@ -154,7 +153,7 @@ class AudioGuideController extends Controller
                     $data['audio_guide_id'] = $audio_guide->id;
                     AudioContent::create($data);
                 }
-                return $free;
+
                 if ($audio_guide !== null && !empty($request->input('description'))) {
                     $description = AudioDescription::create([
                         'files' => null,
@@ -383,7 +382,7 @@ class AudioGuideController extends Controller
 
     public function getAudioGuide(Request $request, $id)
     {
-        $guide = AudioGuide::with(['Category', 'AudioContent','AudioDescription','AudioDescription.AudioFaq','UserGuide'])->find($id);
+        $guide = AudioGuide::with(['Category', 'AudioContent','AudioDescription','AudioDescription.AudioFaq','UserGuide','ProductReview'])->find($id);
 
         if($request->header('Authorization')){
             $token = JWTAuth::verifyToken($request->header('Authorization'),false);
@@ -396,25 +395,25 @@ class AudioGuideController extends Controller
 
                 if(!empty($exist) && ($exist->status === 'paid' || $exist->status === 'complete' || $exist->status === 'active')){
                     $guide['purchase'] = true;
-                    $guide['whishlist'] = $wishlist > 0 ? true : false;
+                    $guide['wishlist'] = $wishlist > 0 ? true : false;
                     $guide['review'] = $review > 0 ? true : false;
                 }elseif($user->demo == '1'){
                     $guide['purchase'] = true;
-                    $guide['whishlist'] = $wishlist > 0 ? true : false;
+                    $guide['wishlist'] = $wishlist > 0 ? true : false;
                     $guide['review'] = $review > 0 ? true : false;
                 }else{
                     $guide['purchase'] = $status !== null ? true : false;
-                    $guide['whishlist'] = $wishlist > 0 ? true : false;
+                    $guide['wishlist'] = $wishlist > 0 ? true : false;
                     $guide['review'] = $review > 0 ? true : false;
                 }
             }else{
                 $guide['purchase'] = false;
-                $guide['whishlist'] = false;
+                $guide['wishlist'] = false;
                 $guide['review'] = false;
             }
         }else{
             $guide['purchase'] = false;
-            $guide['whishlist'] = false;
+            $guide['wishlist'] = false;
             $guide['review'] = false;
         }
 

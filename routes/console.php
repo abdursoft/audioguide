@@ -10,4 +10,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote')->hourly();
 
 
-Schedule::command(PurchaseFirstMail::class)->everyTenSeconds();
+Schedule::command(PurchaseFirstMail::class)->daily();
