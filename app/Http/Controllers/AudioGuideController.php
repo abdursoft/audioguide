@@ -106,7 +106,6 @@ class AudioGuideController extends Controller
             for ($i = 1; $i < count($data); $i++) {
                 $sheetData[] = $this->combineData($data[$i], $keys);
             }
-            return response()->json($sheetData);
 
             try {
                 DB::beginTransaction();

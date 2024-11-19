@@ -50,7 +50,7 @@
             axios.post('/api/v1/admin/audio-guide', myFormData, {
                 withCredentials: true,
                 headers:{
-                    Authorization:"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiIxMjcuMC4wLjEiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3Mjk3MDUyMTQsIm5iZiI6MTcyOTcwNTIyNCwiZXhwIjoxNzI5NzA4ODE0LCJpZCI6MSwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20ifQ.2b49cqYifq3ccmVC6hVhyZd45jrcqT1W8TVsMQEajz4"
+                    Authorization:""
                 }
             } )
                 .then(async (response) => {

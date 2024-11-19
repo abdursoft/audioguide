@@ -65,11 +65,8 @@ class PersonEvent extends Model
         'personaggi_coinvolti',
         'reale_fittizio_mitologico',
         'serie_tv',
-        'produttore_1',
         'videogame',
         'titolo_dell_evento',
-        'tag_description_1',
-        'tag_title_1',
-        'free_1',
+        'audio_guide_id'
     ];
 }

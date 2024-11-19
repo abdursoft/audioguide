@@ -33,8 +33,6 @@ class PersonObject extends Model
         'artista',
         'dipinto',
         'scultura',
-        'dimensione_1',
-        'tecnica_1',
         'movimento',
         'museo',
         'movimento_artistico',
@@ -51,8 +49,6 @@ class PersonObject extends Model
         'continente_di_nascita',
         'nazione_di_nascita',
         'citta_di_nascita',
-        'anno_di_realizzazione_1',
-        'titolo_1',
         'isbn',
         'archteipo',
         'argomento',
@@ -60,7 +56,6 @@ class PersonObject extends Model
         'capitolo',
         'continente',
         'nazione',
-        'citta_1',
         'quartiere',
         'luogo',
         'latitudine',
@@ -73,11 +68,8 @@ class PersonObject extends Model
         'personaggi_coinvolti',
         'reale_fittizio_mitologico',
         'serie_tv',
-        'produttore_1',
         'videogame',
         'titolo_dell_evento',
-        'tag_description_1',
-        'tag_title_1',
-        'free_1',
+        'audio_guide_id'
     ];
 }

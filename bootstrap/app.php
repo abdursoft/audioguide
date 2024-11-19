@@ -20,10 +20,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(\App\Http\Middleware\PostHandler::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        $exceptions->render(function (Throwable $e, Request $request) {
-            return response()->json([
-                'status' => false,
-                'message' => $e->getMessage()
-            ], 404);
-        });
+        // $exceptions->render(function (Throwable $e, Request $request) {
+        //     return response()->json([
+        //         'status' => false,
+        //         'message' => $e->getMessage()
+        //     ], 404);
+        // });
     })->create();

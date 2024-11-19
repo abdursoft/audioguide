@@ -43,7 +43,7 @@ class GoogleController extends Controller
 
                 $token = JWTAuth::createToken('user_token',8740,$newUser->id,$user->email);
             }
-            return redirect()->away(env('FRONT_END'.'auth?token='.$token));
+            return redirect()->away(env('FRONT_END').'auth?token='.$token);
         }
         catch (Exception $e)
         {

@@ -16,8 +16,8 @@ return new class extends Migration
             $table->string('ip',300);
             $table->string('os',300);
             $table->longText('uri');
-            $table->string('month',300)();
-            $table->string('year',300)();
+            $table->string('month',300);
+            $table->string('year',300);
             $table->string('method',300);
             $table->string('browser',300)->nullable();
             $table->string('version',300)->nullable();

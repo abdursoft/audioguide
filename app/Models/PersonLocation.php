@@ -57,13 +57,7 @@ class PersonLocation extends Model
         'argomento',
         'biblioteca',
         'capitolo',
-        'continente_1',
-        'nazione_1',
-        'città_1',
-        'quartiere_1',
         'luogo',
-        'latitudine_1',
-        'longitudine_1',
         'campionato',
         'coppa',
         'squadra',
@@ -72,10 +66,9 @@ class PersonLocation extends Model
         'personaggi_coinvolti',
         'reale_fittizio_mitologico',
         'serie_tv',
-        'produttore_1',
         'videogame',
         'titolo_dell_evento',
-        'tag_description_1',
         'tag_title',
+        'audio_guide_id'
     ];
 }

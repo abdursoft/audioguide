@@ -5,11 +5,8 @@ use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\Payment\CancelController;
 use App\Http\Controllers\Payment\StripeController;
 use App\Http\Controllers\Payment\SuccessController;
-use App\Http\Controllers\SectionController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\StripeWebhook;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {

@@ -98,7 +98,7 @@ class FrontSectionController extends Controller
      */
     public function edit(FrontSection $frontSection)
     {
-        
+
     }
 
     /**
@@ -132,11 +132,12 @@ class FrontSectionController extends Controller
                 'section_title_two'         => $request->section_title_two,
                 'heading'       => $request->heading,
                 'heading_part_two'      => $request->heading_part_two,
-                'short_description'     => $request->short_description,
+                'subheading'     => $request->subheading,
+                'subheading_part_two'     => $request->subheading_part_two,
                 'description'             => $request->description,
                 'short_description' => $request->short_description,
                 'image' => $images,
-                'faqs' => $request->faqs
+                'faqs' => json_encode($request->faqs)
             ]);
             return response()->json([
                 'status'  => true,

@@ -38,7 +38,7 @@ class ProductReviewController extends Controller
         if($validate->fails()){
             return response()->json([
                 'status' => 'fail',
-                'message' => 'Review coludn\'t save',
+                'message' => 'Review couldn\'t save',
                 'errors' => $validate->errors()
             ],400);
         }
@@ -63,7 +63,7 @@ class ProductReviewController extends Controller
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => 'fail',
-                'message' => 'Coludn\'t post your review',
+                'message' => 'Couldn\'t post your review',
                 'errors' => $th->getMessage()
             ],400);
         }
@@ -72,9 +72,18 @@ class ProductReviewController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(ProductReview $productReview)
+    public function show($id=null)
     {
-        //
+        if($id === null){
+            $review = ProductReview::all();
+        }else{
+            $review = ProductReview::with(['User','AudioGuide'])->find($id);
+        }
+        return response()->json([
+            'status' => true,
+            'message' => 'Audio guide successfully retrieved',
+            'data' => $review
+        ],200);
     }
 
     /**

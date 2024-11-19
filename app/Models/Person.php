@@ -45,11 +45,6 @@ class Person extends Model
         'film',
         'regista',
         'produttore',
-        'anno_di_nascita_1',
-        'anno_di_morte_1',
-        'continente_di_nascita_1',
-        'nazione_di_nascita_1',
-        'citta_di_nascita_1',
         'anno_di_realizzazione',
         'titolo',
         'isbn',
@@ -72,11 +67,8 @@ class Person extends Model
         'personaggi_coinvolti',
         'reale_fittizio_mitologico',
         'serie_tv',
-        'produttore_1',
         'videogame',
         'titolo_dell_evento',
-        'tag_description_1',
-        'tag_title_1',
-        'free_1',
+        'audio_guide_id'
     ];
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminBusiness;
+use App\Http\Controllers\AdminReviewController;
 use App\Http\Controllers\AudioContentController;
 use App\Http\Controllers\AudioDescriptionController;
 use App\Http\Controllers\AudioFaqController;
@@ -19,6 +20,7 @@ use App\Http\Controllers\ProductWishController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\SpecialGuideController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\UpdateController;
 use App\Http\Controllers\UserBillingController;
@@ -60,7 +62,7 @@ Route::prefix('v1/users')->group(function(){
         Route::delete('wishlist/delete/{id}', [ProductWishController::class, 'delete']);
         Route::apiResource('audio-history', AudioHistoryController::class);
         Route::post('/complete/audio-history', [AudioHistoryController::class, 'complete']);
-        Route::post('/continoue/audio-history', [AudioHistoryController::class, 'continoue']);
+        Route::post('/continue/audio-history', [AudioHistoryController::class, 'continue']);
         Route::apiResource('profile', ProfileController::class);
         Route::post('profile-image', [UserController::class, 'profileImage']);
         Route::get('get-profile', [ProfileController::class,'profile']);
@@ -121,6 +123,11 @@ Route::prefix('v1/admin')->group(function(){
         // audio guide section start
         Route::apiResource('audio-guide', AudioGuideController::class);
         // audio guide section end
+
+        // special guide start
+        Route::post('special-guide', [SpecialGuideController::class, 'store']);
+        // special guide end
+
         Route::apiResource('audio-content', AudioContentController::class);
         Route::apiResource('audio-description',AudioDescriptionController::class);
         Route::apiResource('audio-faq',AudioFaqController::class);
@@ -170,6 +177,13 @@ Route::prefix('v1/admin')->group(function(){
 
         // get visitor
         Route::get('visitor', [DeviceController::class, 'report']);
+        // admin reviews
+        Route::prefix('review')->controller(AdminReviewController::class)->group(function(){
+            Route::post('create','store');
+            Route::post('update', 'update');
+            Route::get('{id?}', 'show');
+            Route::delete('{id}', 'destroy');
+        });
     });
 
 });
@@ -207,7 +221,6 @@ Route::prefix('v1/client')->group(function(){
 
     // searching system
     Route::post('search', [AudioGuideController::class, 'guideSearch']);
+    // audio guide review
+    Route::get('reviews/{id?}',[ProductReviewController::class, 'show']);
 });
-
-// s3 cloudfront domain
-// https://d281ygvypsdjur.cloudfront.net
