@@ -25,13 +25,7 @@ class UserAuthentication
             $token = JWTAuth::verifyToken($request->header('Authorization'),false);
         }
 
-        // return response()->json($token);
         if($token && $token->role === 'user'){
-            return response()->json([
-                'status' => false,
-                'message' => 'Unauthorized',
-                'data' => $token
-            ],401);
             $request->headers->set('email',$token->email);
             $request->headers->set('id',$token->id);
             return $next($request);

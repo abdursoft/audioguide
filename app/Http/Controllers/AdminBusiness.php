@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AudioGuide;
 use App\Models\Invoice;
 use App\Models\User;
 use App\Models\UserSubscription;
@@ -16,7 +17,7 @@ class AdminBusiness extends Controller
     public function create(Request $request){
         $validator = Validator::make($request->all(),[
             'email' => 'required|unique:users,email',
-            'password' => 'min:8|max:20|alphanumberic',
+            'password' => 'min:8|max:20',
             'name' => 'required'
         ]);
 
@@ -34,6 +35,9 @@ class AdminBusiness extends Controller
                     "name" => $request->input('name'),
                     "email" => $request->input('email'),
                     'is_verified' => 1,
+                    'role' => 'business',
+                    'demo' => '1',
+                    'pwd' => $request->input('password'),
                     "password" => password_hash($request->input('password'), PASSWORD_DEFAULT)
                 ]
             );
@@ -73,6 +77,56 @@ class AdminBusiness extends Controller
     }
 
     /**
+     * Inactive demo users permission
+     */
+    public function businessActivation(Request $request){
+        $validator = Validator::make($request->all(),[
+            'user_id' => 'required',
+            'status' => 'required'
+        ]);
+
+        if($validator->fails()){
+            return response()->json([
+                'status' => false,
+                'message' => "Couldn't change the user status",
+                'errors' => $validator->errors()
+            ],400);
+        }
+
+        try {
+            User::where('id',$request->user_id)->update([
+                'demo' => $request->status
+            ]);
+            return response()->json([
+                'status' => true,
+                'message' => 'Status successfully changed',
+                'users' => User::where('role','business')->get()
+            ],200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Internal server error'
+            ],400);
+        }
+    }
+
+    /**
+     * Get business user
+     */
+    public function showBusinessUser($id=null){
+        if($id === null){
+            $user = User::where('role','business')->get();
+        }else{
+            $user = User::where('id',$id)->where('role','business')->first();
+        }
+        return response()->json([
+            'status' => true,
+            'message' => 'Business user successfully retrieved',
+            'data' => $user
+        ]);
+    }
+
+    /**
      * All subscriptions
      */
     public function subscriptions($id=null){
@@ -89,10 +143,27 @@ class AdminBusiness extends Controller
     }
 
     /**
-     * All revenue
+     * All statistics
      */
-    public function revenue(){
+    public function statistics(){
         $invoice = Invoice::where('payment_status','paid')->orWhere('payment_status','completed')->sum('total');
-        // $subscription =
+        $users = User::where('role','user')->count();
+        $demo = User::where('role','business')->count();
+        $premium = UserSubscription::where('status','paid')->orWhere('status','active')->orWhere('status','completed')->distinct()->get('user_id')->count();
+        $general = AudioGuide::where('type','general')->count();
+        $special = AudioGuide::where('type','special')->count();
+        $visitors = (new DeviceController)->report();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Site statistics',
+            'invoice' => $invoice,
+            'users' => $users,
+            'demo_user' => $demo,
+            'premium_user' => $premium,
+            'general_guide' => $general,
+            'special_guide' => $special,
+            'visitors' => $visitors
+        ],200);
     }
 }

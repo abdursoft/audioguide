@@ -69,6 +69,7 @@ class PersonLocation extends Model
         'videogame',
         'titolo_dell_evento',
         'tag_title',
-        'audio_guide_id'
+        'audio_guide_id',
+        'location_name'
     ];
 }

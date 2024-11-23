@@ -48,26 +48,33 @@ class SpecialGuideController extends Controller
         }
 
         try {
+            $audio_guide = AudioGuide::create([
+                "title" => $request->title,
+                "status" => 'active',
+                "price" => $request->price,
+                // "cover" => Storage::disk('public')->put('guides', $request->file('cover')),
+                "category_id" => 2,
+                "type" => "special",
+                "lessons" => 0,
+            ]);
+
             $person = $this->getSheetData($request,'person');
             $object = $this->getSheetData($request,'object');
             $events = $this->getSheetData($request,'event');
             $location = $this->getSheetData($request,'location');
 
-            $pp = $this->storeData('person',$request->person_title,$person);
-            $po = $this->storeData('object',$request->object_title,$object);
-            $pe = $this->storeData('event',$request->event_title,$events);
-            $pl = $this->storeData('location',$request->location_title,$location);
+            $this->storeData('person',$person, $audio_guide->id);
+            $this->storeData('event',$events, $audio_guide->id);
+            $this->storeData('location',$location, $audio_guide->id);
+            $this->storeData('object',$object, $audio_guide->id);
 
-            SpecialGuide::create([
-                "person_id" => $pp->id,
-                "person_event_id" => $pe->id,
-                "person_object_id" => $po->id,
-                "person_location_id" => $pl->id
-            ]);
-
+            $users = User::where('role', '!=','admin')->get();
+            // foreach($users as $user){
+            //     Mail::to($user->email)->send(new AudioUpload($request->title,"New Special Audio Guide Uploaded",$request->price));
+            // }
             return response()->json([
                 'status' => true,
-                'message' => 'Guide successfully created'
+                'message' => 'Special Guide successfully created'
             ],201);
         } catch (\Throwable $th) {
             return response()->json([
@@ -80,77 +87,52 @@ class SpecialGuideController extends Controller
     /**
      * Store sheet data
      */
-    public function storeData($class,$title, $sheetData){
+    public function storeData($class, $sheetData,$guideId){
         try {
             DB::beginTransaction();
-            $audio_guide = null;
-            $price = 0;
             $free = null;
-            $cat_id = 1;
             foreach ($sheetData as $key => $items) {
                 $data = $items;
                 $item = (object) $items;
-                if ($key === 0) {
-                    $price = $item->total_price ?? 0;
-                    if (!empty($item->categoria)) {
-                        $new_category = str_replace(' ', '_', strtolower($item->categoria));
-                        $new_category = str_replace('/', '_', $new_category);
-                        $exist = Category::where('category', $new_category)->first();
-
-                        if ($exist) {
-                            $cat_id = $exist->id;
-                        } else {
-                            $category = Category::create([
-                                'category' => strtolower($new_category),
-                                'name' => $item->categoria,
-                            ]);
-                            $cat_id = $category->id;
-                        }
-                    }
-
-                    $audio_guide = AudioGuide::create([
-                        "title" => $title,
-                        "status" => 'active',
-                        "price" => $price,
-                        // "cover" => Storage::disk('public')->put('guides', $request->file('cover')),
-                        "category_id" => $cat_id,
-                        "type" => "special",
-                        "lessons" => count($sheetData),
-                    ]);
-                }
-                $data['audio_guide_id'] = $audio_guide->id;
-                if($audio_guide){
-                    if($class == 'person'){
-                        Person::create($data);
-                    }elseif($class == 'object'){
-                        PersonObject::create($data);
-                    }elseif($class == 'event'){
-                        PersonEvent::create($data);
-                    }else{
-                        PersonLocation::create($data);
-                    }
-                }
+                $data['audio_guide_id'] = $guideId;
                 if(!empty($item->free) && $free === null){
                     $free = $item->free;
                 }
-            }
-
-            if($free !== null && $audio_guide !== null){
-                AudioGuide::where('id',$audio_guide->id)->update([
-                    'theme' => $free
-                ]);
+                if($guideId){
+                    if($class == 'person'){
+                        $key = strtolower(str_replace(' ','_',$item->nome_e_cognome));
+                        $key = str_replace("'",'_',$key);
+                        $data['person_name'] = $key;
+                        if($free !== null && $guideId){
+                            AudioGuide::where('id',$guideId)->update([
+                                'theme' => $item->file_mp3
+                            ]);
+                        }
+                        Person::create($data);
+                    }elseif($class == 'object'){
+                        $data['person_id'] = $this->getExistData($item->persone,'person')->id ?? Null;
+                        $data['event_id'] = $this->getExistData($item->eventi,'event')->id ?? Null;
+                        $data['location_id'] = $this->getExistData($item->luoghi,'location')->id ?? Null;
+                        PersonObject::create($data);
+                    }elseif($class == 'event'){
+                        $key = strtolower(str_replace(' ','_',$item->eventi));
+                        $key = str_replace("'",'_',$key);
+                        $data['event_name'] = $key;
+                        PersonEvent::create($data);
+                    }else{
+                        $key = strtolower(str_replace(' ','_',$item->luoghi));
+                        $data['location_name'] = $key;
+                        $key = str_replace("'",'_',$key);
+                        PersonLocation::create($data);
+                    }
+                }
             }
 
             DB::commit();
-
-            $users = User::where('role', '!=','admin')->get();
-            foreach($users as $user){
-                Mail::to($user->email)->send(new AudioUpload($title,"New Special Audio Guide Uploaded",$price));
-            }
-            return $audio_guide;
+            return true;
         } catch (\Throwable $th) {
             DB::rollBack();
-            return $th;
+            return false;
         }
     }
 
@@ -184,6 +166,19 @@ class SpecialGuideController extends Controller
     public function destroy(SpecialGuide $specialGuide)
     {
         //
+    }
+
+    public function getExistData($key,$table,){
+        $key = strtolower(str_replace(' ','_',$key));
+        $key = str_replace("'",'_',$key);
+        if($table == 'person'){
+            $item = Person::where('person_name',$key)->first();
+        }elseif($table == 'event'){
+            $item = PersonEvent::where('event_name',$key)->first();
+        }else{
+            $item = PersonLocation::where('location_name',$key)->first();
+        }
+        return $item;
     }
 
     public function getSheetData(Request $request,$fileName){

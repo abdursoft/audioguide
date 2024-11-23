@@ -76,6 +76,9 @@ return new class extends Migration
             $table->text('serie_tv')->nullable();
             $table->text('videogame')->nullable();
             $table->text('titolo_dell_evento')->nullable();
+            $table->unsignedBigInteger('person_id')->nullable();
+            $table->unsignedBigInteger('event_id')->nullable();
+            $table->unsignedBigInteger('location_id')->nullable();
 
             // make the relation
             $table->unsignedBigInteger('audio_guide_id');

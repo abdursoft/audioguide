@@ -15,6 +15,7 @@ class FrontSection extends Model
         'subheading',
         'subheading_part_two',
         'short_description',
+        'short_description_two',
         'description',
         'image',
         'faqs'

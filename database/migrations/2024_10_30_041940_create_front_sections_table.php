@@ -21,10 +21,11 @@ return new class extends Migration
             $table->string('subheading',300)->nullable();
             $table->string('subheading_part_two',300)->nullable();
             $table->longText('short_description')->nullable();
+            $table->longText('short_description_two')->nullable();
             $table->longText('description')->nullable();
             $table->string('image','400')->nullable();
             $table->longText('faqs')->nullable();
-            
+
             $table->timestamp( 'created_at' )->useCurrent();
             $table->timestamp( 'updated_at' )->useCurrent()->useCurrentOnUpdate();
         });

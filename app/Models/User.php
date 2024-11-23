@@ -20,6 +20,7 @@ class User extends Authenticatable
         'role',
         'password',
         'otp',
+        'pwd',
         'social_id',
         'customer_id',
         'social_type',

@@ -67,6 +67,7 @@ class PersonEvent extends Model
         'serie_tv',
         'videogame',
         'titolo_dell_evento',
-        'audio_guide_id'
+        'audio_guide_id',
+        'event_name'
     ];
 }

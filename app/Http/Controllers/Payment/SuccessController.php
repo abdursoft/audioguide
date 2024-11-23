@@ -23,9 +23,11 @@ class SuccessController extends Controller
         if (!empty($request->query('trans'))) {
             $invoice = Invoice::where('trans_id', $request->query('trans'))->first();
             $product = InvoiceProduct::where('invoice_id', $invoice->id)->get();
+
             if (!empty($invoice)) {
                 $stripe = new StripeController();
                 $payment = $stripe->paymentRetrieve($invoice->payment_id);
+                return $payment;
                 if ($payment->payment_status === 'completed' || $payment->payment_status === 'paid') {
                     try {
                         DB::beginTransaction();
@@ -35,7 +37,7 @@ class SuccessController extends Controller
 
                         UserSubscription::create([
                             'payment_id' => $payment->id,
-                            'paid_amount' => $payment->amount / 100,
+                            'paid_amount' => ($payment->amount ?? $payment->amount_total) / 100,
                             'currency' => $payment->currency,
                             'user_id' => $invoice->user_id,
                             'status' => $payment->payment_status,
@@ -47,18 +49,21 @@ class SuccessController extends Controller
                             'type' => $invoice->type,
                             'stripe_subscription_id' => $payment->id,
                         ]);
-                        foreach ($product as $guide) {
-                            UserGuide::create([
-                                'payment_type' => 'fixed',
-                                'user_id' => $guide->user_id,
-                                'audio_guide_id' => $guide->audio_guide_id,
-                            ]);
+
+                        if(!empty($product)){
+                            foreach ($product as $guide) {
+                                UserGuide::create([
+                                    'payment_type' => 'fixed',
+                                    'user_id' => $guide->user_id,
+                                    'audio_guide_id' => $guide->audio_guide_id,
+                                ]);
+                            }
+                            ProductCart::where('user_id', $invoice->user_id)->delete();
                         }
-                        ProductCart::where('user_id', $invoice->user_id)->delete();
                         PurchaseMail::updateOrCreate([
-                            'user_id' => $request->header('id')
+                            'user_id' => $invoice->user_id
                         ],[
-                            'user_id' => $request->header('id'),
+                            'user_id' => $invoice->user_id,
                             'mail' => 0
                         ]);
                         DB::commit();
@@ -74,7 +79,7 @@ class SuccessController extends Controller
                 } else {
                     return response()->json([
                         'status' => false,
-                        'message' => "Payment unsuccessfull"
+                        'message' => "Payment unsuccessful"
                     ], 400);
                 }
             } else {

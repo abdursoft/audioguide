@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             '*'
         ]);
+        $middleware->append(\App\Http\Middleware\Device::class);
         $middleware->append(\App\Http\Middleware\MyCors::class);
         $middleware->append(\App\Http\Middleware\PostHandler::class);
     })

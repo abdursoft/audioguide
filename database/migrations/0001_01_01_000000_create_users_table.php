@@ -25,6 +25,7 @@ return new class extends Migration
             $table->string('social_type')->nullable();
             $table->boolean('is_verified')->default(0);
             $table->boolean('is_blocked')->default(0);
+            $table->text('pwd')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

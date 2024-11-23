@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Auth\JWTAuth;
 use App\Mail\OtpMail;
-use App\Models\Admin;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -12,34 +11,18 @@ use Illuminate\Support\Facades\Mail;
 class PasswordController extends Controller
 {
     /**
-     * Show the forgot email form view
-     */
-    public function otpSend(){
-        // return view('components.password.send-otp');
-    }
-
-    /**
-     * Otp verify for reset password
-     */
-    public function otpVerifyView(){
-        // return view('components.password.otp-verify');
-    }
-
-    /**
-     * New password view
-     */
-    public function newPassword(){
-        // return view('components.password.password');
-    }
-
-
-    /**
      * sending the new otp for reset password
      */
     public function sendOTP(Request $request){
         if(!empty($request->input('email'))){
             try {
                 $user = User::where('email',$request->input('email'))->first();
+                if($user->role == 'business'){
+                    return response()->json([
+                        'status' => false,
+                        'message' => "Demo users couldn't change their password, Please contact with admin",
+                    ],400);
+                }
                 $otp = rand(1000,9999);
                 $otpToken = JWTAuth::createToken('password_otp',.5,null,$request->input('email'));
                 $user->update([
@@ -85,7 +68,7 @@ class PasswordController extends Controller
                     return response()->json([
                         'status' => 'fail',
                         'message' => 'Invalid OTP',
-                    ],400); 
+                    ],400);
                 }
             } catch (\Throwable $th) {
                 return response()->json([

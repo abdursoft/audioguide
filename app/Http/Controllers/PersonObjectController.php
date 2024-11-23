@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Person;
+use App\Models\PersonEvent;
+use App\Models\PersonLocation;
 use App\Models\PersonObject;
 use Illuminate\Http\Request;
 
@@ -34,9 +37,26 @@ class PersonObjectController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(PersonObject $personObject)
+    public function show($id=null)
     {
-        //
+        if($id === null){
+            return response()->json([
+                'status' => true,
+                'data' => PersonObject::all()
+            ],200);
+        }else{
+            $object = PersonObject::find($id);
+            $person = Person::where('id',$object->person_id)->orderBy('id','Desc')->get();
+            $event = PersonEvent::where('id',$object->event_id)->get();
+            $location = PersonLocation::where('id',$object->location_id)->get();
+            return response()->json([
+                'status' => true,
+                'person' => $person,
+                'object' => $object,
+                'event' => $event,
+                'location' => $location
+            ],200);
+        }
     }
 
     /**
@@ -58,8 +78,19 @@ class PersonObjectController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(PersonObject $personObject)
+    public function destroy($id)
     {
-        //
+        try {
+            PersonObject::where('id', $id)->delete();
+            return response()->json([
+                'status' => true,
+                'message' => 'Person object successfully deleted'
+            ],200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Person object couldn\'t deleted'
+            ],400);
+        }
     }
 }

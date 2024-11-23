@@ -17,5 +17,9 @@ class CategorySeeder extends Seeder
             "category" => "all",
             "name" => "All"
         ]);
+        Category::create([
+            "category" => "special",
+            "name" => "Special"
+        ]);
     }
 }

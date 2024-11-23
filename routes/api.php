@@ -10,8 +10,13 @@ use App\Http\Controllers\AudioHistoryController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ContactMessageController;
 use App\Http\Controllers\DeviceController;
+use App\Http\Controllers\FrontSectionController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PasswordController;
+use App\Http\Controllers\PersonController;
+use App\Http\Controllers\PersonEventController;
+use App\Http\Controllers\PersonLocationController;
+use App\Http\Controllers\PersonObjectController;
 use App\Http\Controllers\ProductCartController;
 use App\Http\Controllers\ProductCouponController;
 use App\Http\Controllers\ProductOfferController;
@@ -43,7 +48,7 @@ Route::get('/user', function (Request $request) {
 
 
 // user api routes
-Route::prefix('v1/users')->group(function(){
+Route::prefix('v1/users')->group(function () {
     Route::post('signup', [UserController::class, 'store']);
     Route::post('signup-otp-verify', [UserController::class, 'verifySignupOTP']);
     Route::post('signin', [UserController::class, 'login']);
@@ -51,13 +56,13 @@ Route::prefix('v1/users')->group(function(){
 
 
 
-    Route::middleware([UserAuthentication::class])->group(function(){
+    Route::middleware([UserAuthentication::class])->group(function () {
         Route::get('auth', [UserController::class, 'adminAuth']);
         Route::get('signout', [UserController::class, 'logOut']);
 
         // guide cart section start
         Route::apiResource('cart', ProductCartController::class);
-        Route::delete('cart/delete/{id}',[ ProductCartController::class, 'delete']);
+        Route::delete('cart/delete/{id}', [ProductCartController::class, 'delete']);
         Route::apiResource('wishlist', ProductWishController::class);
         Route::delete('wishlist/delete/{id}', [ProductWishController::class, 'delete']);
         Route::apiResource('audio-history', AudioHistoryController::class);
@@ -65,7 +70,7 @@ Route::prefix('v1/users')->group(function(){
         Route::post('/continue/audio-history', [AudioHistoryController::class, 'continue']);
         Route::apiResource('profile', ProfileController::class);
         Route::post('profile-image', [UserController::class, 'profileImage']);
-        Route::get('get-profile', [ProfileController::class,'profile']);
+        Route::get('get-profile', [ProfileController::class, 'profile']);
         Route::apiResource('invoice', InvoiceController::class);
         // guide wishlist section end
 
@@ -107,10 +112,11 @@ Route::prefix('v1/users')->group(function(){
 
 
 // admin api routes
-Route::prefix('v1/admin')->group(function(){
+Route::prefix('v1/admin')->group(function () {
     Route::post('signin', [UserController::class, 'login']);
+    Route::get('export-users', [UserController::class, 'export']);
 
-    Route::middleware([AdminAuth::class])->group(function(){
+    Route::middleware([AdminAuth::class])->group(function () {
         Route::get('auth', [UserController::class, 'adminAuth']);
         Route::get('signout', [UserController::class, 'logOut']);
 
@@ -128,10 +134,33 @@ Route::prefix('v1/admin')->group(function(){
         Route::post('special-guide', [SpecialGuideController::class, 'store']);
         // special guide end
 
+        // person section start
+        Route::get('person/{id?}', [PersonController::class, 'show']);
+        Route::delete('person/{id}', [PersonController::class, 'destroy']);
+        // person section end
+
+        // event section start
+        Route::get('event/{id?}', [PersonEventController::class, 'show']);
+        Route::delete('event/{id}', [PersonEventController::class, 'destroy']);
+        // event section end
+
+        // location section start
+        Route::get('location/{id?}', [PersonLocationController::class, 'show']);
+        Route::delete('location/{id}', [PersonLocationController::class, 'destroy']);
+        // location section end
+
+        // object section start
+        Route::get('object/{id?}', [PersonObjectController::class, 'show']);
+        Route::delete('object/{id}', [PersonObjectController::class, 'destroy']);
+        // object section end
+
+        // searching system
+        Route::post('search-guide', [AudioGuideController::class, 'adminGuideSearch']);
+
         Route::apiResource('audio-content', AudioContentController::class);
-        Route::apiResource('audio-description',AudioDescriptionController::class);
-        Route::apiResource('audio-faq',AudioFaqController::class);
-        Route::apiResource('product-offer',ProductOfferController::class);
+        Route::apiResource('audio-description', AudioDescriptionController::class);
+        Route::apiResource('audio-faq', AudioFaqController::class);
+        Route::apiResource('product-offer', ProductOfferController::class);
 
         // coupon section start
         Route::post('coupon', [ProductCouponController::class, 'store']);
@@ -145,19 +174,19 @@ Route::prefix('v1/admin')->group(function(){
         // subscription section end
 
         // front section start
-        Route::post('front-section', [ProductCouponController::class, 'store']);
-        Route::get('front-section/{id?}', [ProductCouponController::class, 'show']);
-        Route::put('front-section/{id}', [ProductCouponController::class, 'update']);
-        Route::delete('front-section/{id}', [ProductCouponController::class, 'destroy']);
+        Route::post('front-section', [FrontSectionController::class, 'store']);
+        Route::get('front-section/{id?}', [FrontSectionController::class, 'show']);
+        Route::put('front-section/{id}', [FrontSectionController::class, 'update']);
+        Route::delete('front-section/{id}', [FrontSectionController::class, 'destroy']);
         // front section end
 
         // business users start
-        Route::post('business/create',[AdminBusiness::class,'create']);
-        Route::post('business/delete/{id}',[AdminBusiness::class,'delete']);
+        Route::post('business/create', [AdminBusiness::class, 'create']);
+        Route::get('business/users/{id?}', [AdminBusiness::class, 'showBusinessUser']);
+        Route::delete('business/delete/{id}', [AdminBusiness::class, 'delete']);
 
         // user sections
         Route::get('get-users', [UserController::class, 'getUsers']);
-        Route::get('export-users', [UserController::class, 'export']);
 
         // subscription and invoices
         Route::get('get-invoices', [InvoiceController::class, "getInvoices"]);
@@ -165,46 +194,47 @@ Route::prefix('v1/admin')->group(function(){
 
         // statistics
         Route::get('statistic/subscription/{id?}', [AdminBusiness::class, 'subscriptions']);
+        Route::get('site-statistics', [AdminBusiness::class, 'statistics']);
         Route::post('subscription-status', [SubscriptionController::class, 'deactiveSubscription']);
         Route::get('revenue', [AdminBusiness::class, 'revenue']);
 
         // contact message
-        Route::get('get-message', [ContactMessageController::class,'getMessage']);
-        Route::get('sent-message', [ContactMessageController::class,'sentMessage']);
-        Route::post('contact-message', [ContactMessageController::class,'messageReplay']);
-        Route::get('contact-message/{id}', [ContactMessageController::class,'seenMessage']);
-        Route::delete('contact-message/{id}', [ContactMessageController::class,'destroy']);
+        Route::get('get-message', [ContactMessageController::class, 'getMessage']);
+        Route::get('sent-message', [ContactMessageController::class, 'sentMessage']);
+        Route::post('contact-message', [ContactMessageController::class, 'messageReplay']);
+        Route::get('contact-message/{id}', [ContactMessageController::class, 'seenMessage']);
+        Route::delete('contact-message/{id}', [ContactMessageController::class, 'destroy']);
 
         // get visitor
         Route::get('visitor', [DeviceController::class, 'report']);
+
         // admin reviews
-        Route::prefix('review')->controller(AdminReviewController::class)->group(function(){
-            Route::post('create','store');
+        Route::prefix('review')->controller(AdminReviewController::class)->group(function () {
+            Route::post('create', 'store');
             Route::post('update', 'update');
             Route::get('{id?}', 'show');
             Route::delete('{id}', 'destroy');
         });
     });
-
 });
 
 
 
 // password controller
-Route::prefix('v1/password')->group(function(){
+Route::prefix('v1/password')->group(function () {
     Route::post('send-otp', [PasswordController::class, 'sendOTP']);
     Route::post('verify-otp', [PasswordController::class, 'verifyOTP']);
     Route::post('new', [PasswordController::class, 'passwordReset']);
 });
 
 // client controller
-Route::prefix('v1/client')->group(function(){
+Route::prefix('v1/client')->group(function () {
     Route::get('device', [DeviceController::class, 'device']);
-    Route::get('category', [ CategoryController::class, 'index' ]);
-    Route::get('category/{category}/audio', [ CategoryController::class, 'categoryByGuide' ]);
-    Route::get('sections', [ SectionController::class, 'index' ]);
-    Route::get('sections/{id}', [ SectionController::class, 'singleSection' ]);
-    Route::get('settings/{id}', [ SettingsController::class, 'index' ]);
+    Route::get('category', [CategoryController::class, 'index']);
+    Route::get('category/{category}/audio', [CategoryController::class, 'categoryByGuide']);
+    Route::get('sections', [SectionController::class, 'index']);
+    Route::get('sections/{id}', [SectionController::class, 'singleSection']);
+    Route::get('settings/{id}', [SettingsController::class, 'index']);
     Route::get('audio-guide', [AudioGuideController::class, 'index']);
     Route::get('audio-guide-by/{id}', [AudioGuideController::class, 'getAudioGuide']);
     Route::get('audio/pagination', [AudioGuideController::class, 'onlyGuide']);
@@ -214,7 +244,7 @@ Route::prefix('v1/client')->group(function(){
     Route::get('subscriptions', [SubscriptionController::class, 'index']);
     Route::get('subscriptions/{id?}', [SubscriptionController::class, 'singleSubScription']);
     // update routes
-    Route::get('updates/{id?}', [UpdateController::class,'show']);
+    Route::get('updates/{id?}', [UpdateController::class, 'show']);
     Route::get('front-section/{id?}', [ProductCouponController::class, 'show']);
 
     Route::post('contact-message', [ContactMessageController::class, 'store']);
@@ -222,5 +252,12 @@ Route::prefix('v1/client')->group(function(){
     // searching system
     Route::post('search', [AudioGuideController::class, 'guideSearch']);
     // audio guide review
-    Route::get('reviews/{id?}',[ProductReviewController::class, 'show']);
+    Route::get('reviews/{id?}', [ProductReviewController::class, 'show']);
+
+    // special guide section start
+    Route::get('person/{id?}', [PersonController::class, 'show']);
+    Route::get('event/{id?}', [PersonEventController::class, 'show']);
+    Route::get('location/{id?}', [PersonLocationController::class, 'show']);
+    Route::get('object/{id?}', [PersonObjectController::class, 'show']);
+    // special guide section end
 });

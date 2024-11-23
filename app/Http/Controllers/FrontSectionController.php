@@ -59,7 +59,7 @@ class FrontSectionController extends Controller
                 'heading_part_two'      => $request->heading_part_two,
                 'short_description'     => $request->short_description,
                 'description'             => $request->description,
-                'short_description' => $request->short_description,
+                'short_description_two' => $request->short_description_two,
                 'image' => $images,
                 'faqs' => $request->faqs
             ]);
@@ -135,7 +135,7 @@ class FrontSectionController extends Controller
                 'subheading'     => $request->subheading,
                 'subheading_part_two'     => $request->subheading_part_two,
                 'description'             => $request->description,
-                'short_description' => $request->short_description,
+                'short_description_two' => $request->short_description_two,
                 'image' => $images,
                 'faqs' => json_encode($request->faqs)
             ]);

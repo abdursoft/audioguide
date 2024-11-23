@@ -126,7 +126,7 @@ class InvoiceController extends Controller {
             return response()->json([
                 'status' => true,
                 'message' => "Invoice successfully retrieved",
-                'data' => Invoice::with('users')->orderBy('id','desc')->get()
+                'data' => Invoice::with('user')->orderBy('id','desc')->get()
             ],200);
         } catch (\Throwable $th) {
             return response()->json([

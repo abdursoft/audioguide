@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\PersonEvent;
+use App\Models\PersonObject;
 use Illuminate\Http\Request;
 
 class PersonEventController extends Controller
@@ -20,7 +21,7 @@ class PersonEventController extends Controller
      */
     public function create()
     {
-        //
+
     }
 
     /**
@@ -34,9 +35,22 @@ class PersonEventController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(PersonEvent $personEvent)
+    public function show($id=null)
     {
-        //
+        if($id === null){
+            return response()->json([
+                'status' => true,
+                'data' => PersonEvent::all()
+            ],200);
+        }else{
+            $event = PersonEvent::find($id);
+            $object = PersonObject::where('event_id',$event->id)->orderBy('id','Desc')->get();
+            return response()->json([
+                'status' => true,
+                'event' => $event,
+                'object' => $object
+            ],200);
+        }
     }
 
     /**
@@ -58,8 +72,19 @@ class PersonEventController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(PersonEvent $personEvent)
+    public function destroy($id)
     {
-        //
+        try {
+            PersonEvent::where('id', $id)->delete();
+            return response()->json([
+                'status' => true,
+                'message' => 'Person event successfully deleted'
+            ],200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Person event couldn\'t deleted'
+            ],400);
+        }
     }
 }

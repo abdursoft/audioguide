@@ -27,10 +27,6 @@ class DeviceController extends Controller
             'browser' => $browser,
             'version' => $version,
         ]);
-        return response()->json([
-            'status' => true,
-            'message' => 'Device information successfully saved'
-        ], 200);
     }
 
     /**

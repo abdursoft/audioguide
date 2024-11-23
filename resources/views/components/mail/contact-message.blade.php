@@ -25,7 +25,7 @@
                     <div style="color: rgb(0, 0, 0); text-align: left;">
                       <h1 style="margin: 1rem 0">Hi, I'm {{$name}}</h1>
                       <p style="padding-bottom: 22px">{{$subjects}}</p>
-                      <p style="padding-bottom: 16px"><em>{{$message}}</em></p>
+                      <p style="padding-bottom: 16px"><em>{{$msg}}</em></p>
                     </div>
                   </div>
                   <div style="padding-top: 20px; color: rgb(153, 153, 153); text-align: center;">
@@ -40,5 +40,4 @@
     </tbody>
   </table>
 </body>
-
 </html>

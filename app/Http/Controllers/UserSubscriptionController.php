@@ -109,6 +109,7 @@ class UserSubscriptionController extends Controller
                     'trans_id'        => $transID,
                     'coupon_code'     => $request->input('coupon_code') ?? null,
                     'delivery_status' => 'pending',
+                    'type'            => 'lifetime',
                     'payment_status'  => 'pending',
                     'user_id'         => $request->header('id'),
                 ]);
@@ -179,7 +180,7 @@ class UserSubscriptionController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => "User subscription successfully retrieved",
-                'data' => UserSubscription::with('users')->orderBy('id','desc')->get()
+                'data' => UserSubscription::with('user')->orderBy('id','desc')->get()
             ],200);
         } catch (\Throwable $th) {
             return response()->json([
