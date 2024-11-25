@@ -147,8 +147,8 @@ class SpecialGuideController extends Controller
                         Person::create($data);
                     }elseif($class == 'object'){
                         $data['person_id'] = $this->getExistData($item->persone,'person')->id ?? Null;
-                        $data['event_id'] = $this->getExistData($item->eventi,'event')->id ?? Null;
-                        $data['location_id'] = $this->getExistData($item->luoghi,'location')->id ?? Null;
+                        $data['person_event_id'] = $this->getExistData($item->eventi,'event')->id ?? Null;
+                        $data['person_location_id'] = $this->getExistData($item->luoghi,'location')->id ?? Null;
                         PersonObject::create($data);
                     }elseif($class == 'event'){
                         $key = strtolower(str_replace(' ','_',$item->eventi));

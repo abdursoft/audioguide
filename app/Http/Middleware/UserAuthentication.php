@@ -25,7 +25,7 @@ class UserAuthentication
             $token = JWTAuth::verifyToken($request->header('Authorization'),false);
         }
 
-        if($token && $token->role === 'user'){
+        if($token && $token->role === 'user' || $token->role === 'admin'){
             $request->headers->set('email',$token->email);
             $request->headers->set('id',$token->id);
             return $next($request);

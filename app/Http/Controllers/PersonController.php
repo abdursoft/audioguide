@@ -45,7 +45,7 @@ class PersonController extends Controller
                 'data' => Person::all()
             ],200);
         }else{
-            $person = Person::with(['audioGuide','audioGuide.AudioDescription','audioDescription.audioFaq','object','object.personEvent','object.personLocation'])->find($id);
+            $person = Person::with(['audioGuide','object','object.personEvent','object.personLocation'])->find($id);
             return response()->json([
                 'status' => true,
                 'message' => 'Person successfully retrieved',

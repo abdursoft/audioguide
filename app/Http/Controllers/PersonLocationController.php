@@ -43,7 +43,7 @@ class PersonLocationController extends Controller
                 'data' => PersonLocation::all()
             ],200);
         }else{
-            $location = PersonLocation::with(['audioGuide','audioGuide.AudioDescription','audioDescription.audioFaq','object','object.personEvent','object.person'])->find($id);
+            $location = PersonLocation::with(['audioGuide','object','object.personEvent','object.person'])->find($id);
             return response()->json([
                 'status' => true,
                 'message' => 'Location successfully retrieved',
