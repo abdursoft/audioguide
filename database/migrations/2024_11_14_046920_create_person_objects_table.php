@@ -76,6 +76,8 @@ return new class extends Migration
             $table->text('serie_tv')->nullable();
             $table->text('videogame')->nullable();
             $table->text('titolo_dell_evento')->nullable();
+            $table->text('image')->nullable();
+
             $table->unsignedBigInteger('person_id')->nullable();
             $table->unsignedBigInteger('event_id')->nullable();
             $table->unsignedBigInteger('location_id')->nullable();
@@ -83,6 +85,9 @@ return new class extends Migration
             // make the relation
             $table->unsignedBigInteger('audio_guide_id');
             $table->foreign('audio_guide_id')->references('id')->on('audio_guides')->cascadeOnUpdate()->restrictOnDelete();
+            $table->foreign('person_id')->references('id')->on('people')->cascadeOnUpdate()->restrictOnDelete();
+            $table->foreign('event_id')->references('id')->on('person_events')->cascadeOnUpdate()->restrictOnDelete();
+            $table->foreign('location_id')->references('id')->on('person_locations')->cascadeOnUpdate()->restrictOnDelete();
 
             $table->timestamp( 'created_at' )->useCurrent();
             $table->timestamp( 'updated_at' )->useCurrent()->useCurrentOnUpdate();

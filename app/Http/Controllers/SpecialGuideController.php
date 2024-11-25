@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Mail\AudioUpload;
+use App\Models\AudioDescription;
+use App\Models\AudioFaq;
 use App\Models\AudioGuide;
 use App\Models\Category;
 use App\Models\Person;
@@ -40,19 +42,33 @@ class SpecialGuideController extends Controller
      */
     public function store(Request $request)
     {
-        if(empty($request->hasFile('person'))){
+        $validator = Validator::make($request->all(), [
+            'cover' => 'required|file|mimes:jpeg,jpg,png,webp',
+            'short_description' => 'required',
+            'title' => 'required|unique:audio_guides,title',
+            'call_to_action' => 'required',
+            'status' => 'required',
+            'faqs' => 'required',
+        ]);
+
+
+        if ($validator->fails()) {
             return response()->json([
                 'status' => false,
-                'message' => 'Person guide is required'
-            ],400);
+                'message' => 'Audio guide couldn\'t create',
+                'errors' => $validator->errors(),
+            ], 400);
         }
 
         try {
+            DB::beginTransaction();
             $audio_guide = AudioGuide::create([
                 "title" => $request->title,
-                "status" => 'active',
+                "short_description" => $request->short_description,
+                "status" => $request->status,
                 "price" => $request->price,
-                // "cover" => Storage::disk('public')->put('guides', $request->file('cover')),
+                "remark" => "Special",
+                "cover" => Storage::disk('public')->put('guides', $request->file('cover')),
                 "category_id" => 2,
                 "type" => "special",
                 "lessons" => 0,
@@ -68,15 +84,35 @@ class SpecialGuideController extends Controller
             $this->storeData('location',$location, $audio_guide->id);
             $this->storeData('object',$object, $audio_guide->id);
 
-            $users = User::where('role', '!=','admin')->get();
-            // foreach($users as $user){
-            //     Mail::to($user->email)->send(new AudioUpload($request->title,"New Special Audio Guide Uploaded",$request->price));
-            // }
+            if ($audio_guide !== null && !empty($request->input('description'))) {
+                $description = AudioDescription::create([
+                    'files' => null,
+                    'description' => $request->input('description'),
+                    'audio_guide_id' => $audio_guide->id,
+                ]);
+                if (!empty($request->input('faqs'))) {
+                    $faqs = json_decode($request->input('faqs'), true);
+                    foreach ($faqs as $items) {
+                        AudioFaq::create([
+                            'question' => $items['question'],
+                            'answer' => $items['answer'],
+                            'audio_description_id' => $description->id,
+                        ]);
+                    }
+                }
+            }
+
+            $users = User::where('role', '!=','admin')->where('role','!=','business')->get();
+            foreach($users as $user){
+                Mail::to($user->email)->send(new AudioUpload($request->title,"New Special Audio Guide Uploaded",$request->price));
+            }
+            DB::commit();
             return response()->json([
                 'status' => true,
                 'message' => 'Special Guide successfully created'
             ],201);
         } catch (\Throwable $th) {
+            DB::rollBack();
             return response()->json([
                 'status' => false,
                 'message' => $th->getMessage()
@@ -168,7 +204,7 @@ class SpecialGuideController extends Controller
         //
     }
 
-    public function getExistData($key,$table,){
+    public function getExistData($key,$table){
         $key = strtolower(str_replace(' ','_',$key));
         $key = str_replace("'",'_',$key);
         if($table == 'person'){

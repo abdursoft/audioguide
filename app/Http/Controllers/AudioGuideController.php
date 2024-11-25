@@ -216,6 +216,13 @@ class AudioGuideController extends Controller
      */
     public function show(AudioGuide $audioGuide)
     {
+        if($audioGuide->type === 'special'){
+            return response()->json([
+                'status' => true,
+                'message' => 'Audio guide successfully retrieved',
+                'data' => $audioGuide->load(['Category', 'AudioDescription', 'AudioDescription.AudioFaq', 'UserGuide','person','personObject','personLocation','personEvent']),
+            ],200);
+        }
         return response()->json([
             'status' => true,
             'message' => 'Audio guide successfully retrieved',
@@ -396,7 +403,7 @@ class AudioGuideController extends Controller
                     $guide['purchase'] = true;
                     $guide['wishlist'] = $wishlist > 0 ? true : false;
                     $guide['review'] = $review > 0 ? true : false;
-                } elseif ($user->demo == '1') {
+                } elseif ($user->demo == '1' || $user->role == 'admin') {
                     $guide['purchase'] = true;
                     $guide['wishlist'] = $wishlist > 0 ? true : false;
                     $guide['review'] = $review > 0 ? true : false;
@@ -453,7 +460,7 @@ class AudioGuideController extends Controller
                 if (!empty($exist) && ($exist->status === 'paid' || $exist->status === 'complete' || $exist->status === 'active')) {
                     $guide['purchase'] = true;
                     $guide['whishlist'] = $wishlist > 0 ? true : false;
-                } elseif ($user->demo == '1') {
+                } elseif ($user->demo == '1' || $user->role == 'admin') {
                     $guide['purchase'] = true;
                     $guide['whishlist'] = $wishlist > 0 ? true : false;
                 } else {
@@ -514,7 +521,7 @@ class AudioGuideController extends Controller
         foreach ($guides as $item) {
             if (in_array($item['id'], $purchase)) {
                 $item['purchase'] = true;
-            } elseif ($user->demo == '1') {
+            } elseif ($user->demo == '1' || $user->role == 'admin') {
                 $item['purchase'] = true;
             } else {
                 if ($status === 'autorenew' || $status === 'lifetime') {

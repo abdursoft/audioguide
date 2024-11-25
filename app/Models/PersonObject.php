@@ -70,9 +70,26 @@ class PersonObject extends Model
         'serie_tv',
         'videogame',
         'titolo_dell_evento',
+        'image',
         'audio_guide_id',
         'person_id',
         'event_id',
         'location_id'
     ];
+
+    public function audioGuide(){
+        return  $this->belongsTo(AudioGuide::class);
+    }
+
+    public function person(){
+        return $this->belongsTo(Person::class);
+    }
+
+    public function personEvent(){
+        return $this->belongsTo(PersonEvent::class);
+    }
+
+    public function personLocation(){
+        return $this->belongsTo(PersonLocation::class);
+    }
 }

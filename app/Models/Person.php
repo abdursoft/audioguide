@@ -70,6 +70,15 @@ class Person extends Model
         'videogame',
         'titolo_dell_evento',
         'audio_guide_id',
-        'person_name'
+        'image',
+        'person_name',
     ];
+
+    public function audioGuide(){
+        return  $this->belongsTo(AudioGuide::class);
+    }
+
+    public function object(){
+        return $this->hasMany(PersonObject::class);
+    }
 }

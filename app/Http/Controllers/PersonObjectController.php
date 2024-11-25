@@ -45,16 +45,11 @@ class PersonObjectController extends Controller
                 'data' => PersonObject::all()
             ],200);
         }else{
-            $object = PersonObject::find($id);
-            $person = Person::where('id',$object->person_id)->orderBy('id','Desc')->get();
-            $event = PersonEvent::where('id',$object->event_id)->get();
-            $location = PersonLocation::where('id',$object->location_id)->get();
+            $object = PersonObject::with(['audioGuide','audioGuide.AudioDescription','audioGuide.person','audioGuide.personEvent','audioGuide.personLocation'])->find($id);
             return response()->json([
                 'status' => true,
-                'person' => $person,
-                'object' => $object,
-                'event' => $event,
-                'location' => $location
+                'message' => 'Object successfully retrieved',
+                'data' => $object,
             ],200);
         }
     }

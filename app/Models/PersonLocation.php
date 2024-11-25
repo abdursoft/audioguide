@@ -70,6 +70,15 @@ class PersonLocation extends Model
         'titolo_dell_evento',
         'tag_title',
         'audio_guide_id',
+        'image',
         'location_name'
     ];
+
+    public function audioGuide(){
+        return  $this->belongsTo(AudioGuide::class);
+    }
+
+    public function object(){
+        return $this->hasMany(PersonObject::class);
+    }
 }

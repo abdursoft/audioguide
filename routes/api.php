@@ -208,6 +208,9 @@ Route::prefix('v1/admin')->group(function () {
         // get visitor
         Route::get('visitor', [DeviceController::class, 'report']);
 
+        //change password
+        Route::post('password-change', [AdminBusiness::class, 'adminPassword']);
+
         // admin reviews
         Route::prefix('review')->controller(AdminReviewController::class)->group(function () {
             Route::post('create', 'store');

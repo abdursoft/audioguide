@@ -68,6 +68,15 @@ class PersonEvent extends Model
         'videogame',
         'titolo_dell_evento',
         'audio_guide_id',
-        'event_name'
+        'image',
+        'event_name',
     ];
+
+    public function audioGuide(){
+        return  $this->belongsTo(AudioGuide::class);
+    }
+
+    public function object(){
+        return $this->hasMany(PersonObject::class);
+    }
 }

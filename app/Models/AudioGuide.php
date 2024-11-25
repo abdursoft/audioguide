@@ -57,12 +57,28 @@ class AudioGuide extends Model
         return $this->hasMany(ProductReview::class);
     }
 
+    public function person(){
+        return $this->hasMany(Person::class);
+    }
+
+    public function personEvent(){
+        return $this->hasMany(PersonEvent::class);
+    }
+
+    public function personLocation(){
+        return $this->hasMany(PersonLocation::class);
+    }
+
+    public function personObject(){
+        return $this->hasMany(PersonObject::class);
+    }
+
 
     protected $fillable = [
         'title',
         'price',
         'status',
-        'cover', 
+        'cover',
         'remark',
         'discount',
         'type',

@@ -166,4 +166,46 @@ class AdminBusiness extends Controller
             'visitors' => $visitors
         ],200);
     }
+
+    /**
+     * Admin password
+     */
+    public function adminPassword(Request $request){
+        $validator = Validator::make($request->all(),[
+            'newPassword' => 'required',
+            'oldPassword' => 'required'
+        ]);
+
+        if($validator->fails()){
+            return response()->json([
+                'status' => false,
+                'message' => 'Password couldn\'t change',
+                'errors' => $validator->errors()
+            ],400);
+        }
+
+        try {
+            $admin = User::where('id',$request->header('id'))->where('role','admin')->first();
+            if(password_verify($request->oldPassword, $admin->password)){
+                $admin->update([
+                    'password' => password_hash($request->input('newPassword'), PASSWORD_DEFAULT)
+                ]);
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Password successfully changed'
+                ],200);
+            }else{
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Old password not match'
+                ],400);
+            }
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage()
+            ],400);
+        }
+    }
 }
