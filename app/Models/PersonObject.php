@@ -73,8 +73,8 @@ class PersonObject extends Model
         'image',
         'audio_guide_id',
         'person_id',
-        'event_id',
-        'location_id'
+        'person_event_id',
+        'person_location_id'
     ];
 
     public function audioGuide(){

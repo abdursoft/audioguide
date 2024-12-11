@@ -163,7 +163,8 @@ class AdminBusiness extends Controller
             'premium_user' => $premium,
             'general_guide' => $general,
             'special_guide' => $special,
-            'visitors' => $visitors
+            'visitors' => $visitors,
+            'top_sell' => (new AudioGuideController)->topSell()
         ],200);
     }
 

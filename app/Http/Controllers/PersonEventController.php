@@ -43,7 +43,7 @@ class PersonEventController extends Controller
                 'data' => PersonEvent::all()
             ],200);
         }else{
-            $event = PersonEvent::with(['audioGuide','object','object.person','object.location'])->find($id);
+            $event = PersonEvent::with(['audioGuide','object','object.person','object.personLocation'])->find($id);
             return response()->json([
                 'status' => true,
                 'message' => 'Event successfully retrieved',

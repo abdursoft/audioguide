@@ -27,7 +27,6 @@ class SuccessController extends Controller
             if (!empty($invoice)) {
                 $stripe = new StripeController();
                 $payment = $stripe->paymentRetrieve($invoice->payment_id);
-                return $payment;
                 if ($payment->payment_status === 'completed' || $payment->payment_status === 'paid') {
                     try {
                         DB::beginTransaction();

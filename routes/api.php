@@ -262,5 +262,6 @@ Route::prefix('v1/client')->group(function () {
     Route::get('event/{id?}', [PersonEventController::class, 'show']);
     Route::get('location/{id?}', [PersonLocationController::class, 'show']);
     Route::get('object/{id?}', [PersonObjectController::class, 'show']);
+    Route::get('sell', [AudioGuideController::class, 'topSell']);
     // special guide section end
 });

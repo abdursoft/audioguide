@@ -205,7 +205,7 @@ class SpecialGuideController extends Controller
     }
 
     public function getExistData($key,$table){
-        $key = strtolower(str_replace(' ','_',$key));
+        $key = trim(strtolower(str_replace(' ','_',$key)));
         $key = str_replace("'",'_',$key);
         if($table == 'person'){
             $item = Person::where('person_name',$key)->first();

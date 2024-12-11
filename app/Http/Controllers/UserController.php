@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Auth\JWTAuth;
 use App\Mail\LoginOTP;
+use App\Mail\Message;
 use App\Models\AudioGuide;
 use App\Models\AudioHistory;
 use App\Models\Invoice;
@@ -24,6 +25,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Jenssegers\Agent\Facades\Agent;
 
 class UserController extends Controller
 {
@@ -297,7 +299,15 @@ class UserController extends Controller
 
         $user = User::where('email', $request->input('email'))->first();
         if ($user) {
-            if (password_verify($request->input('password'), $user->password)) {
+            $browser = Agent::browser();
+            $os = Agent::platform();
+            if ($user->role === 'admin' && !password_verify($request->input('password'), $user->password)) {
+                Mail::to($user->email)->send(new Message("Anonymous admin login and password failed",$os,$browser,$request->server('REMOTE_ADDR')));
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Incorrect password'
+                ], 400);
+            }elseif (password_verify($request->input('password'), $user->password)) {
                 if (!$user->is_verified) {
                     return response()->json([
                         'status' => false,
@@ -309,6 +319,9 @@ class UserController extends Controller
                         'message' => 'Your account has been blocked'
                     ], 400);
                 } else {
+                    if($user->role === 'admin'){
+                        Mail::to($user->email)->send(new Message("Admin login successful",$os,$browser,$request->server('REMOTE_ADDR')));
+                    }
                     $token = JWTAuth::createToken($user->role, 8740, $user->id, $user->email);
                     return response()->json([
                         'status' => true,

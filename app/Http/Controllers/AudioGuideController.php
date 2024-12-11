@@ -32,7 +32,7 @@ class AudioGuideController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Audio guide successfully retrieved',
-            'data' => AudioGuide::all(),
+            'data' => AudioGuide::with('UserGuide')->get(),
         ], 200);
     }
 
@@ -408,9 +408,13 @@ class AudioGuideController extends Controller
                     $guide['wishlist'] = $wishlist > 0 ? true : false;
                     $guide['review'] = $review > 0 ? true : false;
                 } else {
-                    $guide['purchase'] = $status !== null ? true : false;
                     $guide['wishlist'] = $wishlist > 0 ? true : false;
                     $guide['review'] = $review > 0 ? true : false;
+                    if ($status === 'autorenew' || $status === 'lifetime') {
+                        $guide['purchase'] = true;
+                    }else{
+                        $guide['purchase'] = false;
+                    }
                 }
             } else {
                 $guide['purchase'] = false;
@@ -526,6 +530,8 @@ class AudioGuideController extends Controller
             } else {
                 if ($status === 'autorenew' || $status === 'lifetime') {
                     $item['purchase'] = true;
+                }else{
+                    $item['purchase'] = false;
                 }
             }
             if (in_array($item['id'], $wishlist)) {
@@ -536,5 +542,21 @@ class AudioGuideController extends Controller
         }
 
         return response()->json($products);
+    }
+
+    /***
+     * Top selling guides
+     */
+    public function topSell(){
+        $total = UserGuide::where('audio_guide_id','!=', Null)->orderBy('id','desc')
+        ->limit(100)
+        ->get()
+        ->groupBy('audio_guide_id');
+
+        $total_sell = [];
+        foreach($total as $key=>$value){
+            $total_sell[] = AudioGuide::where('id',$key)->first()->toArray();
+        }
+        return $total_sell;
     }
 }
