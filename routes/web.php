@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AppleController;
 use App\Http\Controllers\FacebookController;
 use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\Payment\CancelController;
@@ -18,6 +19,9 @@ Route::get("auth/google", [GoogleController::class, 'handleGoogleCallback']);
 
 Route::get('login/facebook', [FacebookController::class, 'redirectToFacebook'])->name('login.facebook');
 Route::get('auth/facebook', [FacebookController::class, 'handleFacebookCallback']);
+
+Route::get('login/apple', [AppleController::class, 'redirectToProvider'])->name('login.apple');
+Route::any('auth/apple', [AppleController::class, 'handleProviderCallback']);
 
 Route::prefix('payment')->group(function(){
     Route::prefix('stripe')->group(function(){

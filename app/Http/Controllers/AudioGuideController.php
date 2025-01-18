@@ -10,6 +10,10 @@ use App\Models\AudioFaq;
 use App\Models\AudioGuide;
 use App\Models\Category;
 use App\Models\InvoiceProduct;
+use App\Models\Person;
+use App\Models\PersonEvent;
+use App\Models\PersonLocation;
+use App\Models\PersonObject;
 use App\Models\ProductReview;
 use App\Models\ProductWish;
 use App\Models\Update;
@@ -319,10 +323,20 @@ class AudioGuideController extends Controller
         try {
             $invoice = InvoiceProduct::where('audio_guide_id', $audioGuide->id)->count();
             if ($invoice === 0) {
+                if($audioGuide->type !== 'special'){
+                    AudioContent::where('audio_guide_id', $audioGuide->id)->delete();
+                }
                 $description = AudioDescription::where('audio_guide_id', $audioGuide->id)->first();
-                AudioFaq::where('audio_description_id', $description->id)->delete();
-                AudioDescription::where('audio_guide_id', $audioGuide->id)->delete();
-                AudioContent::where('audio_guide_id', $audioGuide->id)->delete();
+                if(!empty($description)){
+                    AudioFaq::where('audio_description_id', $description->id)->delete();
+                    $description->delete();
+                }
+                if($audioGuide->type === 'special'){
+                    PersonObject::where('audio_guide_id',$audioGuide->id)->delete();
+                    PersonEvent::where('audio_guide_id',$audioGuide->id)->delete();
+                    PersonLocation::where('audio_guide_id',$audioGuide->id)->delete();
+                    Person::where('audio_guide_id',$audioGuide->id)->delete();
+                }
                 $delete = $audioGuide->delete();
                 if (!empty($audioGuide->cover) && $delete == '1') {
                     Storage::disk('public')->delete($audioGuide->cover);
@@ -340,7 +354,7 @@ class AudioGuideController extends Controller
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
-                'message' => 'Audio guide couldn\'t remove, maybe its related with a user cartlist, wishlist or some one already purchased',
+                'message' => 'Audio guide couldn\'t remove, maybe its related with a user cart list, wishlist or some one already purchased',
                 'errors' => $th->getMessage(),
             ], 400);
         }

@@ -83,8 +83,8 @@ class StripeController extends Controller
             'customer' => $customer_id,
             'items' => [$items],
             'payment_behavior' => 'default_incomplete',
-            'payment_settings' => ['save_default_payment_method' => 'on_subscription'], 
-            'expand' => ['latest_invoice.payment_intent'], 
+            'payment_settings' => ['save_default_payment_method' => 'on_subscription'],
+            'expand' => ['latest_invoice.payment_intent'],
           ]);
     }
 
@@ -103,8 +103,8 @@ class StripeController extends Controller
     public function payment(string $email,int|float $amount, string $currency, string $name,array $data,$trans_id)
     {
         $checkout_session = $this->pay->checkout->sessions->create([
-            'success_url' => env("APP_URL")."/payment/stripe/success?trans=$trans_id",
-            'cancel_url' => env("APP_URL")."/payment/stripe/cancel?trans=$trans_id",
+            'success_url' => env("APP_URL")."payment/stripe/success?trans=$trans_id",
+            'cancel_url' => env("APP_URL")."payment/stripe/cancel?trans=$trans_id",
             'customer_email' => $email,
             'submit_type' => 'pay',
             'payment_method_types' => ['card'],
@@ -176,15 +176,15 @@ class StripeController extends Controller
 
     public function subscriptionEvents(Request $request){
         $endpoint_secret = env('STRIPE_END_POINT');
-    
+
         $payload = @file_get_contents('php://input');
         $sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
         $event = null;
-        
+
         $event = \Stripe\Webhook::constructEvent(
             $payload, $sig_header, $endpoint_secret
           );
-        
+
         switch ($event->type) {
           case 'customer.subscription.created':
             $subscription = $event->data->object;

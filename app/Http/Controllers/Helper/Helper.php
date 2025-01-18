@@ -51,13 +51,11 @@ class Helper extends Controller {
     /**
      * Google event handler
      */
-    public static function ga4( string $event, array $params ) {
-        $measurement_id = 'G-XXXXXXXXXX';
-        $api_secret     = 'api_secret_key';
+    public static function ga4( string $event, array $params, string $measurement_id, string $api_secret, string $client_id ) {
         $url            = "https://www.google-analytics.com/mp/collect?measurement_id=" . $measurement_id . "&api_secret=" . $api_secret;
 
         $data = array(
-            'client_id' => '1552776741.1677766660',
+            'client_id' => $client_id,
             'events'    => array(
                 array(
                     'name'   => $event,

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AudioGuide;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -176,14 +177,16 @@ class CategoryController extends Controller {
      * Category by guide
      */
     public function categoryByGuide( $category ) {
+        if($category == '1'){
+            $items = AudioGuide::with('category')->get();
+        }else{
+            $items = AudioGuide::where( 'category_id', $category )->get();
+        }
         return response()->json( [
             'status'  => true,
             'message' => 'Category wise audio guides',
-            'data'    => Category::with( 'AudioGuide' )->where( 'id', $category )->paginate(
-                $perPage = 10,
-                $column = ['*'],
-                $pageName = 'page'
-            ),
+            'data'    => $items,
+            'category' => Category::find($category)
         ], 200 );
     }
 }

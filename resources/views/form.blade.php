@@ -28,6 +28,7 @@
         </div>
         <button type="button" onclick="addFaq()">Add Faq</button>
         <button type="submit">Submit Data</button>
+        <a href="http://127.0.0.1:8000/login/apple" target="_blank">login with apple</a>
     </form>
     <script src="https://rent.abdursoft.com/axios/axios.js"></script>
     <script>
